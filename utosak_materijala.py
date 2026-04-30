@@ -132,6 +132,7 @@ if not df.empty:
                         <td class="doc-title">
                             <h2 style="margin:0;">Specifikacija</h2>
                             <p style="margin:0; font-size: 12px; opacity: 0.7;">Utorašak materijala / Kablova</p>
+                            <p>Datum: {datetime.now().strftime('%d.%m.%Y')}</p></div>
                         </td>
                     </tr>
                 </table>
