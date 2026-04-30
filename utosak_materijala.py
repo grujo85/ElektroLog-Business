@@ -81,35 +81,27 @@ if not df.empty:
     ukupno = df['metara'].sum()
     st.metric("UKUPNO METARA", f"{ukupno:.2f} m")
 
-    # 5. MODERAN I PREGLEDAN IZVEŠTAJ (SVAKO POLJE OZNAČENO)
+   # 5. MODERNA TABELA BEZ GRUBIH LINIJA
     st.write("---")
-    if st.button("💎 GENERIŠI DETALJAN IZVEŠTAJ"):
+    if st.button("💎 GENERIŠI ČIST IZVEŠTAJ"):
         # 1. Priprema logotipa
         logo_data = ""
         if os.path.exists("elmar.webp"):
             with open("elmar.webp", "rb") as f:
                 logo_base64 = base64.b64encode(f.read()).decode()
-            logo_data = f'<img src="data:image/webp;base64,{logo_base64}" style="width:160px;">'
+            logo_data = f'<img src="data:image/webp;base64,{logo_base64}" style="width:140px;">'
 
-        # 2. Pravljenje stavki sa jasnim oznakama šta je šta
-        stavke_html = ""
+        # 2. Pravljenje redova (čist dizajn)
+        redovi_html = ""
         for _, r in df.iterrows():
-            stavke_html += f"""
-            <div style="border: 1px solid #333; padding: 15px; margin-bottom: 20px; border-radius: 5px; background-color: #ffffff;">
-                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px;">
-                    <span style="font-size: 14px; color: #555;"><b>DATUM:</b> {r['datum']}</span>
-                    <span style="font-size: 14px; color: #555;"><b>RO:</b> {r['orman']}</span>
-                </div>
-                <div style="margin-bottom: 8px;">
-                    <span style="color: #1a1a1a; font-size: 16px;"><b>OPIS / KRUG:</b> {r['opis']}</span>
-                </div>
-                <div style="margin-bottom: 8px;">
-                    <span style="color: #000; font-size: 18px;"><b>KOLIČINA:</b> <span style="background: #ffff00; padding: 2px 5px;">{r['metara']:.2f} m</span></span>
-                </div>
-                <div style="color: #666; font-size: 14px; border-top: 1px dashed #ccc; padding-top: 5px;">
-                    <b>NAPOMENA:</b> {r['napomena'] if r['napomena'] else '/'}
-                </div>
-            </div>
+            redovi_html += f"""
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 12px; color: #666;">{r['datum']}</td>
+                <td style="padding: 12px; font-weight: bold;">{r['orman']}</td>
+                <td style="padding: 12px;">{r['opis']}</td>
+                <td style="padding: 12px; text-align: right; font-weight: bold;">{r['metara']:.2f} m</td>
+                <td style="padding: 12px; color: #888; font-size: 13px;">{r['napomena'] if r['napomena'] else ''}</td>
+            </tr>
             """
 
         # 3. HTML Dokument
@@ -119,30 +111,43 @@ if not df.empty:
         <head>
             <meta charset="UTF-8">
             <style>
-                body {{ font-family: 'Arial', sans-serif; padding: 50px; background-color: #f5f5f5; color: #333; }}
-                .page {{ background: white; padding: 40px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }}
-                .header {{ text-align: center; border-bottom: 4px solid #000; padding-bottom: 20px; margin-bottom: 40px; }}
-                .total {{ background: #222; color: white; padding: 25px; text-align: right; margin-top: 30px; border-radius: 5px; }}
-                h1 {{ margin: 10px 0; letter-spacing: 1px; }}
+                body {{ font-family: 'Helvetica', Arial, sans-serif; padding: 40px; color: #333; }}
+                .container {{ max-width: 900px; margin: auto; }}
+                .header {{ text-align: center; margin-bottom: 50px; }}
+                table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+                th {{ text-align: left; padding: 12px; border-bottom: 2px solid #333; text-transform: uppercase; font-size: 13px; color: #000; }}
+                .total-section {{ margin-top: 30px; border-top: 2px solid #000; padding-top: 15px; text-align: right; }}
             </style>
         </head>
         <body>
-            <div class="page">
+            <div class="container">
                 <div class="header">
                     {logo_data}
-                    <h1>SPECIFIKACIJA RADOVA</h1>
-                    <p style="font-size: 18px; color: #555;">ELMAR - Elektro-instalacije</p>
+                    <h2 style="margin-top: 15px; font-weight: 300; letter-spacing: 1px;">SPECIFIKACIJA RADOVA</h2>
                 </div>
 
-                {stavke_html}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>RO</th>
+                            <th>Strujni krug / Opis</th>
+                            <th style="text-align: right;">Metara</th>
+                            <th>Napomena</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {redovi_html}
+                    </tbody>
+                </table>
 
-                <div class="total">
-                    <span style="font-size: 16px; opacity: 0.8;">UKUPNO ZA NAPLATU:</span><br>
-                    <span style="font-size: 36px; font-weight: bold;">{ukupno:.2f} m</span>
+                <div class="total-section">
+                    <span style="font-size: 16px;">UKUPNO:</span>
+                    <span style="font-size: 24px; font-weight: bold; margin-left: 15px;">{ukupno:.2f} m</span>
                 </div>
-
-                <p style="text-align: center; margin-top: 40px; font-size: 12px; color: #999;">
-                    Dokument je generisan automatski: {datetime.now().strftime("%d.%m.%Y. u %H:%M")}
+                
+                <p style="margin-top: 60px; font-size: 11px; color: #aaa; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
+                    ELMAR Elektro-instalacije | Dokument generisan: {datetime.now().strftime("%d.%m.%Y.")}
                 </p>
             </div>
         </body>
@@ -150,9 +155,9 @@ if not df.empty:
         """
         
         st.download_button(
-            label="📩 PREUZMI MODERAN IZVEŠTAJ",
+            label="📩 PREUZMI ČIST IZVEŠTAJ",
             data=izvestaj_html,
-            file_name=f"Elmar_Specifikacija_{datetime.now().strftime('%d_%m_%Y')}.html",
+            file_name=f"Elmar_Specifikacija_{datetime.now().strftime('%d_%m')}.html",
             mime="text/html"
         )
     # 6. BRISANJE CELE BAZE - VRACENO
