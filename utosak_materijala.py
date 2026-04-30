@@ -112,11 +112,12 @@ if not df.empty:
         </style></head>
         <body>
             <div class="header">
-                <h2>SPECIFIKACIJA RADOVA</h2>
+                <h2>SPECIFIKACIJA IZVEDENIH INSTALACIJA</h2>
+                <p>Dokumentacija o utrošku kablova i strujnih krugova</p>
                 <p>Datum: {datetime.now().strftime('%d.%m.%Y')}</p>
             </div>
             <table>
-                <thead><tr><th>Datum</th><th>Orman</th><th>Krug</th><th>Metara</th><th>Napomena</th></tr></thead>
+                <thead><tr><th>Datum</th><th>Orman</th><th>Strujni krug</th><th>Metara</th><th>Napomena</th></tr></thead>
                 <tbody>{rows_html}</tbody>
             </table>
             <h3 style="text-align:right;">UKUPNO: {df['metara'].sum():.2f} m</h3>
