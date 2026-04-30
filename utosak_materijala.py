@@ -81,71 +81,78 @@ if not df.empty:
     ukupno = df['metara'].sum()
     st.metric("UKUPNO METARA", f"{ukupno:.2f} m")
 
-    # 5. MODERAN IZVEŠTAJ (BEZ TABELE)
+    # 5. MODERAN I PREGLEDAN IZVEŠTAJ (SVAKO POLJE OZNAČENO)
     st.write("---")
-    if st.button("💎 GENERIŠI MODERAN IZVEŠTAJ"):
+    if st.button("💎 GENERIŠI DETALJAN IZVEŠTAJ"):
         # 1. Priprema logotipa
         logo_data = ""
         if os.path.exists("elmar.webp"):
             with open("elmar.webp", "rb") as f:
                 logo_base64 = base64.b64encode(f.read()).decode()
-            logo_data = f'<img src="data:image/webp;base64,{logo_base64}" style="width:150px;">'
+            logo_data = f'<img src="data:image/webp;base64,{logo_base64}" style="width:160px;">'
 
-        # 2. Pravljenje stavki (svaki red iz baze)
+        # 2. Pravljenje stavki sa jasnim oznakama šta je šta
         stavke_html = ""
         for _, r in df.iterrows():
             stavke_html += f"""
-            <div style="border-bottom: 1px solid #ddd; padding: 10px 0; margin-bottom: 10px;">
-                <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                    <span>{r['orman']} &nbsp; - &nbsp; {r['opis']}</span>
-                    <span style="color: #555;">{r['datum']}</span>
+            <div style="border: 1px solid #333; padding: 15px; margin-bottom: 20px; border-radius: 5px; background-color: #ffffff;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 10px;">
+                    <span style="font-size: 14px; color: #555;"><b>DATUM:</b> {r['datum']}</span>
+                    <span style="font-size: 14px; color: #555;"><b>RO:</b> {r['orman']}</span>
                 </div>
-                <div style="margin-top: 5px;">
-                    <span style="font-size: 18px; color: #000;">{r['metara']:.2f} m</span>
-                    <span style="margin-left: 20px; color: #777; font-style: italic;">{r['napomena'] if r['napomena'] else ''}</span>
+                <div style="margin-bottom: 8px;">
+                    <span style="color: #1a1a1a; font-size: 16px;"><b>OPIS / KRUG:</b> {r['opis']}</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <span style="color: #000; font-size: 18px;"><b>KOLIČINA:</b> <span style="background: #ffff00; padding: 2px 5px;">{r['metara']:.2f} m</span></span>
+                </div>
+                <div style="color: #666; font-size: 14px; border-top: 1px dashed #ccc; padding-top: 5px;">
+                    <b>NAPOMENA:</b> {r['napomena'] if r['napomena'] else '/'}
                 </div>
             </div>
             """
 
-        # 3. Ceo HTML dokument zapakovan u jedan string
+        # 3. HTML Dokument
         izvestaj_html = f"""
         <!DOCTYPE html>
-        <html>
+        <html lang="sr">
         <head>
             <meta charset="UTF-8">
             <style>
-                body {{ font-family: sans-serif; padding: 40px; line-height: 1.5; }}
-                .header {{ text-align: center; border-bottom: 3px solid #000; padding-bottom: 20px; margin-bottom: 30px; }}
-                .stavka {{ page-break-inside: avoid; }}
-                .total {{ background: #f0f0f0; padding: 20px; text-align: right; margin-top: 20px; border-radius: 5px; }}
+                body {{ font-family: 'Arial', sans-serif; padding: 50px; background-color: #f5f5f5; color: #333; }}
+                .page {{ background: white; padding: 40px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 800px; margin: auto; }}
+                .header {{ text-align: center; border-bottom: 4px solid #000; padding-bottom: 20px; margin-bottom: 40px; }}
+                .total {{ background: #222; color: white; padding: 25px; text-align: right; margin-top: 30px; border-radius: 5px; }}
+                h1 {{ margin: 10px 0; letter-spacing: 1px; }}
             </style>
         </head>
         <body>
-            <div class="header">
-                {logo_data}
-                <h1>SPECIFIKACIJA RADOVA</h1>
-                <p>ELMAR - Elektroinstalacije</p>
-            </div>
+            <div class="page">
+                <div class="header">
+                    {logo_data}
+                    <h1>SPECIFIKACIJA RADOVA</h1>
+                    <p style="font-size: 18px; color: #555;">ELMAR - Elektro-instalacije</p>
+                </div>
 
-            {stavke_html}
+                {stavke_html}
 
-            <div class="total">
-                <p style="margin:0; font-size: 14px;">UKUPAN UTROŠAK KABLOVA:</p>
-                <h2 style="margin:0; font-size: 30px;">{ukupno:.2f} m</h2>
+                <div class="total">
+                    <span style="font-size: 16px; opacity: 0.8;">UKUPNO ZA NAPLATU:</span><br>
+                    <span style="font-size: 36px; font-weight: bold;">{ukupno:.2f} m</span>
+                </div>
+
+                <p style="text-align: center; margin-top: 40px; font-size: 12px; color: #999;">
+                    Dokument je generisan automatski: {datetime.now().strftime("%d.%m.%Y. u %H:%M")}
+                </p>
             </div>
-            
-            <p style="margin-top: 40px; font-size: 12px; color: #888; text-align: center;">
-                Izveštaj generisan: {datetime.now().strftime("%d.%m.%Y. u %H:%M")}
-            </p>
         </body>
         </html>
         """
         
-        # 4. Streamlit download dugme
         st.download_button(
-            label="📩 PREUZMI IZVEŠTAJ ZA ŠTAMPU",
+            label="📩 PREUZMI MODERAN IZVEŠTAJ",
             data=izvestaj_html,
-            file_name=f"Elmar_Izvestaj_{datetime.now().strftime('%d_%m')}.html",
+            file_name=f"Elmar_Specifikacija_{datetime.now().strftime('%d_%m_%Y')}.html",
             mime="text/html"
         )
     # 6. BRISANJE CELE BAZE - VRACENO
