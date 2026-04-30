@@ -81,38 +81,66 @@ if not df.empty:
     ukupno = df['metara'].sum()
     st.metric("UKUPNO METARA", f"{ukupno:.2f} m")
 
-    # 5. DUGME ZA PDF (HTML IZVEŠTAJ)
+    # 5. MODERAN IZVEŠTAJ (BEZ TABELE)
     st.write("---")
-    if st.button("💎 GENERIŠI IZVEŠTAJ ZA ŠTAMPU"):
-        # Pripremamo logo za PDF/HTML
+    if st.button("💎 GENERIŠI MODERAN IZVEŠTAJ"):
+        # Pripremamo logo
         logo_html = ""
         if os.path.exists("elmar.webp"):
             with open("elmar.webp", "rb") as f:
-                logo_base64 = base64.b64encode(f.read()).decode()
-            logo_html = f'<img src="data:image/webp;base64,{logo_base64}" width="150"><br>'
+                kodiranje = base64.b64encode(f.read()).decode()
+            logo_html = f'<img src="data:image/webp;base64,{kodiranje}" width="120">'
 
-        rows = "".join([f"<tr><td>{r['datum']}</td><td>{r['orman']}</td><td>{r['opis']}</td><td>{r['metara']}</td><td>{r['napomena']}</td></tr>" for _, r in df.iterrows()])
-        
+        # Pravimo kartice za svaki unos
+        stavke_html = ""
+        for _, r in df.iterrows():
+            stavke_html += f"""
+            <div style="border-bottom: 1px solid #eee; padding: 15px 0;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="font-weight: bold; color: #333;">{r['orman']} &nbsp; | &nbsp; {r['opis']}</span>
+                    <span style="color: #666;">{r['datum']}</span>
+                </div>
+                <div style="margin-top: 5px; color: #444;">
+                    <strong>{r['metara']:.2f} m</strong> <span style="margin-left: 20px; font-style: italic; color: #888;">{r['napomena'] if r['napomena'] else ''}</span>
+                </div>
+            </div>
+            """
+
         html = f"""
         <html>
-        <body style='font-family:Arial; padding:20px;'>
-            <div style='text-align:center;'>
-                {logo_html}
-                <h2>SPECIFIKACIJA IZVEDENIH RADOVA</h2>
+        <head>
+            <style>
+                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.6; }}
+                .container {{ max-width: 800px; margin: auto; padding: 20px; }}
+                .header {{ text-align: center; margin-bottom: 40px; border-bottom: 2px solid #333; padding-bottom: 20px; }}
+                .footer {{ margin-top: 50px; text-align: center; font-size: 12px; color: #999; }}
+                .total-box {{ background: #f9f9f9; padding: 20px; text-align: right; margin-top: 30px; border-radius: 8px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    {logo_html}
+                    <h1 style="margin-top: 10px; letter-spacing: 2px;">SPECIFIKACIJA RADOVA</h1>
+                    <p>Elektro-instalacije Elmar</p>
+                </div>
+                
+                {stavke_html}
+
+                <div class="total-box">
+                    <span style="font-size: 18px;">UKUPAN UTROŠAK:</span>
+                    <br>
+                    <span style="font-size: 32px; font-weight: bold; color: #000;">{ukupno:.2f} m</span>
+                </div>
+
+                <div class="footer">
+                    Izveštaj generisan dana {datetime.now().strftime("%d.%m.%Y u %H:%M")}
+                </div>
             </div>
-            <table border='1' width='100%' style='border-collapse:collapse; margin-top:20px;'>
-                <tr style='background:#f2f2f2;'>
-                    <th>Datum</th><th>RO</th><th>Krug / Opis</th><th>Metara</th><th>Napomena</th>
-                </tr>
-                {rows}
-            </table>
-            <br>
-            <h3 style='text-align:right;'>UKUPNO: {ukupno:.2f} m</h3>
-            <p style='font-size:10px; color:gray; margin-top:50px;'>Generisano putem Elektro-Log Business aplikacije</p>
         </body>
         </html>
         """
-        st.download_button("Preuzmi izveštaj", html, file_name=f"Izvestaj_{u_datum}.html", mime="text/html")
+        st.download_button("Preuzmi moderan izveštaj", html, file_name=f"Specifikacija_{datetime.now().strftime('%d_%m')}.html", mime="text/html")
     # 6. BRISANJE CELE BAZE - VRACENO
     st.write("---")
     if st.checkbox("Prikaži opciju za brisanje cele baze"):
