@@ -81,58 +81,68 @@ if not df.empty:
     ukupno = df['metara'].sum()
     st.metric("UKUPNO METARA", f"{ukupno:.2f} m")
 
-   # 5. MODERNA TABELA BEZ GRUBIH LINIJA
+   # 5. PROFESIONALNI MEMORANDUM (PREMIUM DIZAJN)
     st.write("---")
-    if st.button("💎 GENERIŠI ČIST IZVEŠTAJ"):
-        # 1. Priprema logotipa
+    if st.button("💎 GENERIŠI PROFESIONALNI IZVEŠTAJ"):
+        # 1. Priprema logotipa (Base64)
         logo_data = ""
         if os.path.exists("elmar.webp"):
             with open("elmar.webp", "rb") as f:
                 logo_base64 = base64.b64encode(f.read()).decode()
-            logo_data = f'<img src="data:image/webp;base64,{logo_base64}" style="width:140px;">'
+            logo_data = f'<img src="data:image/webp;base64,{logo_base64}" style="height:80px;">'
 
-        # 2. Pravljenje redova (čist dizajn)
+        # 2. Generisanje redova tabele
         redovi_html = ""
-        for _, r in df.iterrows():
+        for i, r in df.iterrows():
+            # Svaki drugi red ima blagu sivu pozadinu radi lakšeg čitanja
+            bg_color = "#f9f9f9" if i % 2 == 0 else "#ffffff"
             redovi_html += f"""
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 12px; color: #666;">{r['datum']}</td>
-                <td style="padding: 12px; font-weight: bold;">{r['orman']}</td>
-                <td style="padding: 12px;">{r['opis']}</td>
-                <td style="padding: 12px; text-align: right; font-weight: bold;">{r['metara']:.2f} m</td>
-                <td style="padding: 12px; color: #888; font-size: 13px;">{r['napomena'] if r['napomena'] else ''}</td>
+            <tr style="background-color: {bg_color}; border-bottom: 1px solid #eee;">
+                <td style="padding: 12px 15px; color: #666; font-size: 13px;">{r['datum']}</td>
+                <td style="padding: 12px 15px; font-weight: 600; text-transform: uppercase;">{r['orman']}</td>
+                <td style="padding: 12px 15px;">{r['opis']}</td>
+                <td style="padding: 12px 15px; text-align: right; font-weight: 700;">{r['metara']:.2f} m</td>
+                <td style="padding: 12px 15px; color: #888; font-size: 12px; font-style: italic;">{r['napomena'] if r['napomena'] else ''}</td>
             </tr>
             """
 
-        # 3. HTML Dokument
+        # 3. HTML Memoranduma
         izvestaj_html = f"""
         <!DOCTYPE html>
         <html lang="sr">
         <head>
             <meta charset="UTF-8">
             <style>
-                body {{ font-family: 'Helvetica', Arial, sans-serif; padding: 40px; color: #333; }}
-                .container {{ max-width: 900px; margin: auto; }}
-                .header {{ text-align: center; margin-bottom: 50px; }}
-                table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-                th {{ text-align: left; padding: 12px; border-bottom: 2px solid #333; text-transform: uppercase; font-size: 13px; color: #000; }}
-                .total-section {{ margin-top: 30px; border-top: 2px solid #000; padding-top: 15px; text-align: right; }}
+                @page {{ size: A4; margin: 20mm; }}
+                body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #2c3e50; margin: 0; padding: 0; }}
+                .wrapper {{ max-width: 800px; margin: auto; }}
+                .header-table {{ width: 100%; border-bottom: 2px solid #2c3e50; padding-bottom: 20px; margin-bottom: 30px; }}
+                .doc-title {{ text-align: right; text-transform: uppercase; letter-spacing: 2px; color: #2c3e50; }}
+                table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
+                th {{ background-color: #2c3e50; color: white; text-align: left; padding: 12px 15px; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }}
+                .total-row {{ border-top: 3px solid #2c3e50; margin-top: 20px; padding: 20px 0; display: flex; justify-content: flex-end; align-items: baseline; }}
+                .footer {{ margin-top: 100px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 10px; color: #bdc3c7; text-transform: uppercase; letter-spacing: 1px; }}
             </style>
         </head>
         <body>
-            <div class="container">
-                <div class="header">
-                    {logo_data}
-                    <h2 style="margin-top: 15px; font-weight: 300; letter-spacing: 1px;">SPECIFIKACIJA RADOVA</h2>
-                </div>
+            <div class="wrapper">
+                <table class="header-table">
+                    <tr>
+                        <td style="width: 50%;">{logo_data}</td>
+                        <td class="doc-title">
+                            <h2 style="margin:0;">Specifikacija</h2>
+                            <p style="margin:0; font-size: 12px; opacity: 0.7;">Utorašak materijala / Kablova</p>
+                        </td>
+                    </tr>
+                </table>
 
                 <table>
                     <thead>
                         <tr>
                             <th>Datum</th>
-                            <th>RO</th>
-                            <th>Strujni krug / Opis</th>
-                            <th style="text-align: right;">Metara</th>
+                            <th>Oznaka (RO)</th>
+                            <th>Strujni krug / Opis radova</th>
+                            <th style="text-align: right;">Količina</th>
                             <th>Napomena</th>
                         </tr>
                     </thead>
@@ -141,23 +151,23 @@ if not df.empty:
                     </tbody>
                 </table>
 
-                <div class="total-section">
-                    <span style="font-size: 16px;">UKUPNO:</span>
-                    <span style="font-size: 24px; font-weight: bold; margin-left: 15px;">{ukupno:.2f} m</span>
+                <div class="total-row">
+                    <span style="font-size: 14px; margin-right: 15px; font-weight: 300;">UKUPNA KOLIČINA:</span>
+                    <span style="font-size: 28px; font-weight: 800; border-bottom: 4px double #2c3e50;">{ukupno:.2f} m</span>
                 </div>
-                
-                <p style="margin-top: 60px; font-size: 11px; color: #aaa; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
-                    ELMAR Elektro-instalacije | Dokument generisan: {datetime.now().strftime("%d.%m.%Y.")}
-                </p>
+
+                <div class="footer">
+                    ELMAR Elektro-instalacije &nbsp; | &nbsp; {datetime.now().strftime("%Y")} &nbsp; | &nbsp; Interni dokument
+                </div>
             </div>
         </body>
         </html>
         """
         
         st.download_button(
-            label="📩 PREUZMI ČIST IZVEŠTAJ",
+            label="📩 PREUZMI PROFESIONALNI IZVEŠTAJ",
             data=izvestaj_html,
-            file_name=f"Elmar_Specifikacija_{datetime.now().strftime('%d_%m')}.html",
+            file_name=f"Elmar_Business_Spec_{datetime.now().strftime('%d_%m_%y')}.html",
             mime="text/html"
         )
     # 6. BRISANJE CELE BAZE - VRACENO
