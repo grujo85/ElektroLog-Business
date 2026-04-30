@@ -81,22 +81,38 @@ if not df.empty:
     ukupno = df['metara'].sum()
     st.metric("UKUPNO METARA", f"{ukupno:.2f} m")
 
-    # 5. DUGME ZA PDF (HTML IZVEŠTAJ) - VRACENO
+    # 5. DUGME ZA PDF (HTML IZVEŠTAJ)
     st.write("---")
     if st.button("💎 GENERIŠI IZVEŠTAJ ZA ŠTAMPU"):
+        # Pripremamo logo za PDF/HTML
+        logo_html = ""
+        if os.path.exists("elmar.webp"):
+            with open("elmar.webp", "rb") as f:
+                logo_base64 = base64.b64encode(f.read()).decode()
+            logo_html = f'<img src="data:image/webp;base64,{logo_base64}" width="150"><br>'
+
         rows = "".join([f"<tr><td>{r['datum']}</td><td>{r['orman']}</td><td>{r['opis']}</td><td>{r['metara']}</td><td>{r['napomena']}</td></tr>" for _, r in df.iterrows()])
+        
         html = f"""
-        <html><body style='font-family:Arial;'>
-            <h2>SPECIFIKACIJA RADOVA</h2>
-            <table border='1' width='100%' style='border-collapse:collapse;'>
-                <tr style='background:#eee;'><th>Datum</th><th>RO</th><th>Krug</th><th>Metara</th><th>Napomena</th></tr>
+        <html>
+        <body style='font-family:Arial; padding:20px;'>
+            <div style='text-align:center;'>
+                {logo_html}
+                <h2>SPECIFIKACIJA IZVEDENIH RADOVA</h2>
+            </div>
+            <table border='1' width='100%' style='border-collapse:collapse; margin-top:20px;'>
+                <tr style='background:#f2f2f2;'>
+                    <th>Datum</th><th>RO</th><th>Krug / Opis</th><th>Metara</th><th>Napomena</th>
+                </tr>
                 {rows}
             </table>
-            <h3>Ukupno: {ukupno:.2f} m</h3>
-        </body></html>
+            <br>
+            <h3 style='text-align:right;'>UKUPNO: {ukupno:.2f} m</h3>
+            <p style='font-size:10px; color:gray; margin-top:50px;'>Generisano putem Elektro-Log Business aplikacije</p>
+        </body>
+        </html>
         """
         st.download_button("Preuzmi izveštaj", html, file_name=f"Izvestaj_{u_datum}.html", mime="text/html")
-
     # 6. BRISANJE CELE BAZE - VRACENO
     st.write("---")
     if st.checkbox("Prikaži opciju za brisanje cele baze"):
