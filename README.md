@@ -20,6 +20,7 @@ Program za vođenje evidencije o izvedenim elektro-instalacijama, utrošku kablo
 *   **Python** (Tkinter za interfejs)
 *   **SQLite** (Baza podataka)
 *   **HTML/CSS** (Formatiranje izveštaja za štampu)
-
+  
+https://elektrolog-business-jqreartnmchqekfzjtjzwv.streamlit.app/
 ---
 *Autor: Vlade*
