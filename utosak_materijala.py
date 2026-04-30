@@ -91,18 +91,23 @@ if not df.empty:
                 logo_base64 = base64.b64encode(f.read()).decode()
             logo_data = f'<img src="data:image/webp;base64,{logo_base64}" style="height:80px;">'
 
-        # 2. Generisanje redova tabele
+        # 2. Generisanje redova tabele - SMANJENO I DISKRETNIJE
         redovi_html = ""
         for i, r in df.iterrows():
-            # Svaki drugi red ima blagu sivu pozadinu radi lakšeg čitanja
             bg_color = "#f9f9f9" if i % 2 == 0 else "#ffffff"
             redovi_html += f"""
             <tr style="background-color: {bg_color}; border-bottom: 1px solid #eee;">
-                <td style="padding: 12px 15px; color: #666; font-size: 13px;">{r['datum']}</td>
-                <td style="padding: 12px 15px; font-weight: 600; text-transform: uppercase;">{r['orman']}</td>
-                <td style="padding: 12px 15px;">{r['opis']}</td>
-                <td style="padding: 12px 15px; text-align: right; font-weight: 700;">{r['metara']:.2f} m</td>
-                <td style="padding: 12px 15px; color: #888; font-size: 12px; font-style: italic;">{r['napomena'] if r['napomena'] else ''}</td>
+                <td style="padding: 8px 12px; color: #666; font-size: 12px;">{r['datum']}</td>
+                
+                # SMANJENO: font-weight sa 600 na 500, size na 13px
+                <td style="padding: 8px 12px; font-weight: 500; text-transform: uppercase; font-size: 13px;">{r['orman']}</td>
+                
+                <td style="padding: 8px 12px; font-size: 13px;">{r['opis']}</td>
+                
+                # SMANJENO: font-weight sa 700 na 600, size na 14px
+                <td style="padding: 8px 12px; text-align: right; font-weight: 600; font-size: 14px;">{r['metara']:.2f} m</td>
+                
+                <td style="padding: 8px 12px; color: #888; font-size: 11px; font-style: italic;">{r['napomena'] if r['napomena'] else ''}</td>
             </tr>
             """
 
