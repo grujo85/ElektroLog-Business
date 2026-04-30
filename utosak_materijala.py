@@ -116,6 +116,7 @@ if not df.empty:
                 @page {{ size: A4; margin: 20mm; }}
                 body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #2c3e50; margin: 0; padding: 0; }}
                 .wrapper {{ max-width: 800px; margin: auto; }}
+                @media print {{ @page {{ margin: 0; }} body {{ padding: 1.5cm; }} }}
                 .header-table {{ width: 100%; border-bottom: 2px solid #2c3e50; padding-bottom: 20px; margin-bottom: 30px; }}
                 .doc-title {{ text-align: right; text-transform: uppercase; letter-spacing: 2px; color: #2c3e50; }}
                 table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
