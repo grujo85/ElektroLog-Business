@@ -1,222 +1,245 @@
-import streamlit as st
-import pandas as pd
-import sqlite3
-import os
-import base64
+import tkinter as tk
+from tkinter import ttk, messagebox, filedialog
 from datetime import datetime
+import webbrowser
+import os
+import sqlite3
+import shutil
+import base64
 
-# 1. PODEŠAVANJA I LOGO
-st.set_page_config(page_title="ELEKTRO-LOG BUSINESS", layout="wide")
+class ElektroProUltra:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("ELEKTRO-LOG BUSINESS v1.0")
+        self.root.geometry("1150x850")
+        self.root.configure(bg="#f0f2f5")
+        
+        self.db_name = "elektro_baza.db"
+        # Promeni putanju do svog logotipa ako je drugačija
+        self.putanja_logotipa = "/home/vlade/elmar.webp" 
+        self.logo_data = self.ucitaj_logo_u_base64()
+        self.edit_id = None
+        
+        self.kreiraj_bazu()
 
-if os.path.exists("elmar.webp"):
-    with open("elmar.webp", "rb") as f:
-        data = base64.b64encode(f.read()).decode()
-    st.markdown(f'<img src="data:image/webp;base64,{data}" width="200">', unsafe_allow_html=True)
+        self.main = tk.Frame(root, bg="#f0f2f5", padx=30, pady=20)
+        self.main.pack(fill="both", expand=True)
 
-st.title("ELEKTRO-LOG BUSINESS v1.0 ⚡")
+        tk.Label(self.main, text="PRO SPECIFIKACIJA RADOVA", 
+                 font=("Segoe UI", 20, "bold"), fg="#2d3748", bg="#f0f2f5").pack(pady=(0,15))
 
-# 2. BAZA PODATAKA
-def init_db():
-    conn = sqlite3.connect('elektro_baza.db')
-    conn.execute("""CREATE TABLE IF NOT EXISTS radovi 
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                  datum TEXT, orman TEXT, opis TEXT, 
-                  metara REAL, napomena TEXT)""")
-    conn.close()
+        # Forma za unos
+        self.f_unos = tk.Frame(self.main, bg="white", padx=20, pady=20, relief="flat", highlightthickness=1, highlightbackground="#e2e8f0")
+        self.f_unos.pack(fill="x")
 
-init_db()
+        def in_f(label, row, col):
+            tk.Label(self.f_unos, text=label, font=("Segoe UI", 9, "bold"), bg="white", fg="#4a5568").grid(row=row, column=col, sticky="w", pady=5, padx=5)
+            e = tk.Entry(self.f_unos, font=("Segoe UI", 11), bd=1, relief="solid")
+            e.grid(row=row, column=col+1, sticky="we", padx=10, pady=5)
+            return e
 
-# 3. FORMA ZA UNOS
-with st.form("unos_forme", clear_on_submit=True):
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        u_datum = st.date_input("Datum", datetime.now()).strftime("%d.%m.%Y")
-        u_orman = st.text_input("Orman (RO)").upper()
-    with c2:
-        u_opis = st.text_input("Strujni krug")
-        u_metara = st.number_input("Metara (m)", min_value=0.0, step=0.1)
-    with c3:
-        u_napomena = st.text_area("Napomena", height=68)
-    
-    if st.form_submit_button("💾 SNIMI / DODAJ"):
-        if u_orman and u_opis:
-            conn = sqlite3.connect('elektro_baza.db')
-            conn.execute("INSERT INTO radovi (datum, orman, opis, metara, napomena) VALUES (?,?,?,?,?)", 
-                         (u_datum, u_orman, u_opis, u_metara, u_napomena))
-            conn.commit()
-            conn.close()
-            st.success("Sačuvano!")
-            st.rerun()
-        else:
-            st.error("Popunite Orman i Strujni krug!")
+        self.e_dat = in_f("Datum radova:", 0, 0)
+        self.e_dat.insert(0, datetime.now().strftime("%d.%m.%Y"))
+        self.e_orm = in_f("Oznaka ormana:", 0, 2)
+        self.e_naz = in_f("Strujni krug:", 1, 0)
+        self.e_met = in_f("Dužina (m):", 1, 2)
+        self.e_nap = in_f("Napomena:", 2, 0)
+        self.f_unos.columnconfigure((1,3), weight=1)
 
-# 4. PRIKAZ, POJEDINAČNO BRISANJE I UKUPNO
-st.divider()
-conn = sqlite3.connect('elektro_baza.db')
-df = pd.read_sql_query("SELECT * FROM radovi ORDER BY id DESC", conn)
-conn.close()
+        # Dugmad za akcije
+        btn_f = tk.Frame(self.main, bg="#f0f2f5")
+        btn_f.pack(fill="x", pady=15)
 
-if not df.empty:
-    st.subheader("📋 Pregled radova")
-    st.info("💡 Brisanje jednog reda: Klikni na kvadratić levo od reda i pritisni 'Delete' na tastaturi.")
-    
-    # Tabela u kojoj možeš da brišeš jedan po jedan red
-    edited_df = st.data_editor(
-        df,
-        use_container_width=True,
-        hide_index=True,
-        num_rows="dynamic",
-        key="tabela_editor"
-    )
-    
-    # Ako si obrisao red u tabeli, sačuvaj to u bazu
-    if len(edited_df) < len(df):
-        conn = sqlite3.connect('elektro_baza.db')
-        conn.execute("DELETE FROM radovi")
-        edited_df.to_sql('radovi', conn, if_exists='append', index=False)
-        conn.commit()
-        conn.close()
-        st.rerun()
+        self.btn_dodaj = tk.Button(btn_f, text="+ SNIMI / DODAJ", command=self.sacuvaj_podatke, bg="#3182ce", fg="white", font=("Segoe UI", 10, "bold"), padx=20)
+        self.btn_dodaj.pack(side="left", padx=5)
+        
+        tk.Button(btn_f, text="✏️ IZMENI", command=self.popuni_za_izmenu, bg="#805ad5", fg="white", font=("Segoe UI", 10), padx=15).pack(side="left", padx=5)
+        tk.Button(btn_f, text="OBRIŠI", command=self.obrisi, bg="#e53e3e", fg="white", font=("Segoe UI", 10), padx=15).pack(side="left", padx=5)
+        tk.Button(btn_f, text="OČISTI", command=self.ocisti_formu, bg="#a0aec0", fg="white", font=("Segoe UI", 10), padx=10).pack(side="left", padx=5)
+        
+        tk.Button(btn_f, text="📥 RESTORE", command=self.restore_baze, bg="#d69e2e", fg="white", font=("Segoe UI", 10), padx=15).pack(side="right", padx=5)
+        tk.Button(btn_f, text="💾 BACKUP", command=self.backup, bg="#38a169", fg="white", font=("Segoe UI", 10, "bold"), padx=15).pack(side="right")
 
-    ukupno = df['metara'].sum()
-    st.metric("UKUPNO METARA", f"{ukupno:.2f} m")
+        # Tabela u aplikaciji (GUI)
+        self.tree = ttk.Treeview(self.main, columns=("id", "1", "2", "3", "4", "5"), show='headings')
+        for i, h in enumerate(["ID", "DATUM", "ORMAN", "S. KRUG", "METARA", "NAPOMENA"]):
+            self.tree.heading(str(i if i>0 else "id"), text=h)
+        self.tree.column("id", width=40, anchor="center")
+        self.tree.column("1", width=100, anchor="center")
+        self.tree.column("2", width=120, anchor="center")
+        self.tree.pack(fill="both", expand=True)
 
-   # 5. PROFESIONALNI MEMORANDUM (PREMIUM DIZAJN SA GRUPISANJEM)
-    st.write("---")
-    if st.button("💎 GENERIŠI PROFESIONALNI IZVEŠTAJ"):
-        # 1. Priprema logotipa (Base64)
-        logo_data = ""
-        if os.path.exists("elmar.webp"):
-            with open("elmar.webp", "rb") as f:
-                logo_base64 = base64.b64encode(f.read()).decode()
-            logo_data = f'<img src="data:image/webp;base64,{logo_base64}" style="height:80px;">'
+        self.footer = tk.Frame(self.main, bg="#f0f2f5")
+        self.footer.pack(fill="x", pady=20)
+        self.total_lbl = tk.Label(self.footer, text="UKUPNO: 0.00 m", font=("Segoe UI", 16, "bold"), bg="#f0f2f5")
+        self.total_lbl.pack(side="left")
+        tk.Button(self.footer, text="💎 GENERIŠI PDF IZVEŠTAJ", command=self.export_html, bg="#2d3748", fg="white", font=("Segoe UI", 12, "bold"), padx=30, pady=12).pack(side="right")
 
-        # 2. Sortiranje podataka po ormanu za grupisanje
-        df_sorted = df.sort_values(by="orman")
+        self.osvezi_tabelu()
+
+    def ucitaj_logo_u_base64(self):
+        if os.path.exists(self.putanja_logotipa):
+            try:
+                with open(self.putanja_logotipa, "rb") as f:
+                    return base64.b64encode(f.read()).decode('utf-8')
+            except: return ""
+        return ""
+
+    def kreiraj_bazu(self):
+        with sqlite3.connect(self.db_name) as conn:
+            conn.execute("CREATE TABLE IF NOT EXISTS radovi (id INTEGER PRIMARY KEY AUTOINCREMENT, datum TEXT, orman TEXT, opis TEXT, metara REAL, napomena TEXT)")
+
+    def osvezi_tabelu(self):
+        for i in self.tree.get_children(): self.tree.delete(i)
+        with sqlite3.connect(self.db_name) as conn:
+            rows = conn.execute("SELECT * FROM radovi ORDER BY orman ASC, id DESC").fetchall()
+            for r in rows: self.tree.insert("", "end", values=r)
+        t = sum(float(self.tree.item(c)["values"][4]) for c in self.tree.get_children())
+        self.total_lbl.config(text=f"UKUPNO: {t:.2f} m")
+
+    def sacuvaj_podatke(self):
+        try:
+            m = float(self.e_met.get().replace(',', '.'))
+            with sqlite3.connect(self.db_name) as conn:
+                if self.edit_id:
+                    conn.execute("UPDATE radovi SET datum=?, orman=?, opis=?, metara=?, napomena=? WHERE id=?",
+                                 (self.e_dat.get(), self.e_orm.get().upper(), self.e_naz.get(), m, self.e_nap.get(), self.edit_id))
+                else:
+                    conn.execute("INSERT INTO radovi (datum, orman, opis, metara, napomena) VALUES (?,?,?,?,?)", 
+                                 (self.e_dat.get(), self.e_orm.get().upper(), self.e_naz.get(), m, self.e_nap.get()))
+            self.ocisti_formu(); self.osvezi_tabelu()
+        except: messagebox.showerror("Greška", "Proverite unos metara!")
+
+    def ocisti_formu(self, reset_id=True):
+        for e in [self.e_dat, self.e_orm, self.e_naz, self.e_met, self.e_nap]: e.delete(0, 'end')
+        self.e_dat.insert(0, datetime.now().strftime("%d.%m.%Y"))
+        if reset_id:
+            self.edit_id = None
+            self.btn_dodaj.config(text="+ SNIMI / DODAJ", bg="#3182ce")
+
+    def popuni_za_izmenu(self):
+        selected = self.tree.selection()
+        if not selected: return
+        v = self.tree.item(selected[0])['values']
+        self.edit_id = v[0]
+        self.ocisti_formu(reset_id=False)
+        self.e_dat.insert(0, v[1]); self.e_orm.insert(0, v[2]); self.e_naz.insert(0, v[3])
+        self.e_met.insert(0, v[4]); self.e_nap.insert(0, v[5])
+        self.btn_dodaj.config(text="💾 SAČUVAJ IZMENE", bg="#ed8936")
+
+    def obrisi(self):
+        sel = self.tree.selection()
+        if sel and messagebox.askyesno("Baza", "Obrisati trajno?"):
+            with sqlite3.connect(self.db_name) as conn:
+                for s in sel: conn.execute("DELETE FROM radovi WHERE id=?", (self.tree.item(s)['values'][0],))
+            self.osvezi_tabelu()
+
+    def backup(self):
+        d = f"backup_elektro_{datetime.now().strftime('%Y%m%d_%H%M')}.db"
+        shutil.copy2(self.db_name, d)
+        messagebox.showinfo("Backup", f"Snimljeno kao: {d}")
+
+    def restore_baze(self):
+        fajl = filedialog.askopenfilename(filetypes=[("Database", "*.db")])
+        if fajl and messagebox.askyesno("RESTORE", "Pregaziti trenutne podatke?"):
+            shutil.copy2(fajl, self.db_name)
+            self.osvezi_tabelu()
+
+    def export_html(self):
+        stavke = [self.tree.item(c)["values"] for c in self.tree.get_children()]
+        if not stavke: return
+        
+        # Sortiranje po ORMANU za grupisanje
+        stavke_sorted = sorted(stavke, key=lambda x: x[2]) 
         
         html_tabele = ""
-        prethodni_orman = None
+        trenutni_orman = None
         
-        for i, r in df_sorted.iterrows():
-            trenutni_orman = r['orman']
+        for s in stavke_sorted:
+            orman_naziv = s[2]
             
-            # Ako se promeni orman, zatvori staru i otvori novu tabelu
-            if trenutni_orman != prethodni_orman:
-                if prethodni_orman is not None:
+            # Pravimo novu tabelu ako se promeni orman
+            if orman_naziv != trenutni_orman:
+                if trenutni_orman is not None:
                     html_tabele += "</tbody></table><br>"
                 
-                html_tabele += f"""
-                <h3 style="margin-top:30px; color:#2c3e50; border-left: 4px solid #2c3e50; padding-left:10px; text-transform: uppercase; font-size: 14px;">
-                    ORMAN: {trenutni_orman}
-                </h3>
+                html_tabele += f"<h3 style='margin-top:30px; color:#2d3748; border-left: 4px solid #3182ce; padding-left:10px;'>ORMAN: {orman_naziv}</h3>"
+                html_tabele += """
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 15%;">Datum</th>
-                            <th style="width: 20%;">Oznaka (RO)</th>
-                            <th style="width: 20%;">Strujni krug</th>
-                            <th style="width: 15%; text-align: right;">Količina</th>
-                            <th style="width: 30%;">Napomena</th>
+                            <th>Datum radova</th>
+                            <th>Oznaka ormana</th>
+                            <th>Strujni krug</th>
+                            <th>Dužina</th>
+                            <th>Napomena</th>
                         </tr>
                     </thead>
-                    <tbody>
-                """
-                prethodni_orman = trenutni_orman
+                    <tbody>"""
+                trenutni_orman = orman_naziv
             
-            bg_color = "#f9f9f9" if i % 2 == 0 else "#ffffff"
             html_tabele += f"""
-            <tr style="background-color: {bg_color}; border-bottom: 1px solid #eee;">
-                <td style="padding: 8px 12px; color: #666; font-size: 12px; text-align: center;">{r['datum']}</td>
-                <td style="padding: 8px 12px; font-weight: 500; font-size: 13px; text-align: center; white-space: nowrap;">{r['orman']}</td>
-                <td style="padding: 8px 12px; font-size: 13px; text-align: center;">{r['opis']}</td>
-                <td style="padding: 8px 12px; text-align: right; font-weight: bold; font-size: 12px;">{r['metara']:.2f} m</td>
-                <td style="padding: 8px 12px; color: #444; font-size: 11px; text-align: left;">{r['napomena'] if r['napomena'] else ''}</td>
-            </tr>
-            """
+            <tr>
+                <td>{s[1]}</td>
+                <td style='white-space: nowrap;'>{s[2]}</td>
+                <td>{s[3]}</td>
+                <td style='font-weight:bold;'>{s[4]} m</td>
+                <td style='text-align: left;'>{s[5]}</td>
+            </tr>"""
 
         html_tabele += "</tbody></table>"
 
-        # 3. Finalni HTML sa fiksnim futerom na dnu svake strane
-        izvestaj_html = f"""
-        <!DOCTYPE html>
-        <html lang="sr">
+        html_final = f"""
+        <html>
         <head>
             <meta charset="UTF-8">
             <style>
-                @page {{ 
-                    size: A4; 
-                    margin: 20mm 15mm 25mm 15mm; 
-                }}
-                body {{ 
-                    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
-                    color: #2c3e50; 
-                    margin: 0; 
-                    padding-bottom: 50px; 
-                }}
-                .header-table {{ width: 100%; border-bottom: 2px solid #2c3e50; padding-bottom: 20px; margin-bottom: 20px; }}
-                .doc-title {{ text-align: right; text-transform: uppercase; letter-spacing: 1px; }}
+                body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #2d3748; }}
+                .header {{ display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3182ce; padding-bottom: 15px; }}
+                .logo {{ max-width: 150px; }}
                 
-                table {{ width: 100%; border-collapse: collapse; table-layout: fixed; page-break-inside: auto; }}
-                tr {{ page-break-inside: avoid; page-break-after: auto; }}
-                th {{ background-color: #2c3e50; color: white; padding: 10px; text-transform: uppercase; font-size: 10px; text-align: center; }}
+                table {{ width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 10px; }}
                 
-                .total-row {{ border-top: 3px solid #2c3e50; margin-top: 30px; padding: 20px 0; text-align: right; }}
+                /* Širine kolona */
+                th:nth-child(1) {{ width: 15%; }}
+                th:nth-child(2) {{ width: 20%; }}
+                th:nth-child(3) {{ width: 15%; }}
+                th:nth-child(4) {{ width: 15%; }}
+                th:nth-child(5) {{ width: 35%; }}
+
+                th {{ background: #2d3748; color: white; padding: 12px; text-align: center; font-size: 14px; }}
+                td {{ padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: center; vertical-align: middle; font-size: 13px; }}
                 
-                /* FIXIRANI FUTER ZA SVAKU STRANU */
-                .print-footer {{
-                    position: fixed;
-                    bottom: -10mm;
-                    left: 0;
-                    width: 100%;
-                    text-align: center;
-                    font-size: 10px;
-                    color: #bdc3c7;
-                    border-top: 1px solid #eee;
-                    padding-top: 10px;
-                    background: white;
-                }}
+                tr:nth-child(even) {{ background: #f8fafc; }}
+                
+                .total {{ text-align: right; margin-top: 30px; font-size: 20px; font-weight: bold; border-top: 2px solid #2d3748; padding-top: 10px; }}
+                .footer-sigs {{ margin-top: 60px; display: flex; justify-content: space-between; }}
+                .sig-box {{ border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 5px; font-size: 14px; }}
             </style>
         </head>
         <body>
-            <table class="header-table">
-                <tr>
-                    <td style="width: 50%;">{logo_data}</td>
-                    <td class="doc-title">
-                        <h2 style="margin:0; font-size: 18px;">Specifikacija radova</h2>
-                        <p style="margin:5px 0; font-size: 12px;">Datum: {datetime.now().strftime('%d.%m.%Y')}</p>
-                    </td>
-                </tr>
-            </table>
+            <div class="header">
+                <img src="data:image/webp;base64,{self.logo_data}" class="logo">
+                <div style="text-align:right;">
+                    <h2 style="margin:0;">SPECIFIKACIJA IZVEDENIH INSTALACIJA</h2>
+                    <p style="margin:5px 0;">Datum izveštaja: {datetime.now().strftime('%d.%m.%Y.')}</p>
+                </div>
+            </div>
 
             {html_tabele}
 
-            <div class="total-row">
-                <span style="font-size: 14px; font-weight: 300;">UKUPNA KOLIČINA:</span>
-                <span style="font-size: 24px; font-weight: 800; border-bottom: 3px double #2c3e50; margin-left: 10px;">{ukupno:.2f} m</span>
-            </div>
-
-            <div class="print-footer">
-                ELMAR Elektro-instalacije &nbsp; | &nbsp; DESIGN VLADE 2026 &nbsp; | &nbsp; Interni dokument
+            <div class="total">UKUPNA DUŽINA: {sum(float(s[4]) for s in stavke):.2f} m</div>
+            
+            <div class="footer-sigs">
+                <div class="sig-box">Izvođač radova</div>
+                <div class="sig-box">Nadzorni organ</div>
             </div>
         </body>
-        </html>
-        """
-        
-        st.download_button(
-            label="📩 PREUZMI PROFESIONALNI IZVEŠTAJ",
-            data=izvestaj_html,
-            file_name=f"Elmar_Spec_{datetime.now().strftime('%d_%m_%y')}.html",
-            mime="text/html"
-        )
+        </html>"""
 
-    # 6. BRISANJE CELE BAZE
-    st.write("---")
-    if st.checkbox("Prikaži opciju za brisanje cele baze"):
-        if st.button("❌ OBRIŠI SVE PODATKE IZ BAZE"):
-            conn = sqlite3.connect('elektro_baza.db')
-            conn.execute("DELETE FROM radovi")
-            conn.commit()
-            conn.close()
-            st.rerun()
-else:
-    st.info("Baza je prazna.")
+        f_name = os.path.realpath("Izvestaj_Po_Ormanima.html")
+        with open(f_name, "w", encoding="utf-8") as f: f.write(html_final)
+        webbrowser.open("file://" + f_name)
+
+if __name__ == "__main__":
+    r = tk.Tk(); app = ElektroProUltra(r); r.mainloop()
