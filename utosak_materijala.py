@@ -118,10 +118,6 @@ if not df.empty:
                 td:last-child {{ 
                     text-align: left;        /* NAPOMENA U LEVO */
                 }}
-
-                .kolicina-cell {
-                    text-align: center !important;
-                }
                 
                 /* Ukupno sekcija */
                 .total-container {{ text-align: right; margin-top: 20px; }}
