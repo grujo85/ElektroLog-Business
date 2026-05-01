@@ -103,6 +103,7 @@ if not df.empty:
                 /* Header sekcija */
                 .header-container {{ display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #2c3e50; padding-bottom: 20px; margin-bottom: 40px; }}
                 .logo {{ width: 120px; }}
+                @media print {{ @page {{ margin: 0; }} body {{ padding: 1.5cm; }} }}
                 .header-text {{ text-align: right; }}
                 .header-text h1 {{ margin: 0; font-size: 28px; letter-spacing: 4px; color: #2c3e50; text-transform: uppercase; }}
                 .header-text p {{ margin: 2px 0; font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 2px; }}
