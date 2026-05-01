@@ -5,9 +5,10 @@ import os
 import base64
 from datetime import datetime
 
-# 1. PODEŠAVANJA I LOGO
+# 1. PODEŠAVANJA
 st.set_page_config(page_title="ELEKTRO-LOG BUSINESS", layout="wide")
 
+# Funkcija za logo u aplikaciji
 if os.path.exists("elmar.webp"):
     with open("elmar.webp", "rb") as f:
         data = base64.b64encode(f.read()).decode()
@@ -31,10 +32,10 @@ with st.form("unos_forme", clear_on_submit=True):
     c1, c2, c3 = st.columns(3)
     with c1:
         u_datum = st.date_input("Datum", datetime.now()).strftime("%d.%m.%Y")
-        u_orman = st.text_input("Orman (RO)").upper()
+        u_orman = st.text_input("Oznaka (RO)").upper()
     with c2:
-        u_opis = st.text_input("Strujni krug")
-        u_metara = st.number_input("Metara (m)", min_value=0.0, step=0.1)
+        u_opis = st.text_input("Strujni krug / Opis")
+        u_metara = st.number_input("Količina (m)", min_value=0.0, step=0.1)
     with c3:
         u_napomena = st.text_area("Napomena", height=68)
     
@@ -48,9 +49,9 @@ with st.form("unos_forme", clear_on_submit=True):
             st.success("Sačuvano!")
             st.rerun()
         else:
-            st.error("Popunite Orman i Strujni krug!")
+            st.error("Popunite Oznaku i Strujni krug!")
 
-# 4. PRIKAZ, POJEDINAČNO BRISANJE I UKUPNO
+# 4. PRIKAZ I OBRADA
 st.divider()
 conn = sqlite3.connect('elektro_baza.db')
 df = pd.read_sql_query("SELECT * FROM radovi ORDER BY id DESC", conn)
@@ -58,15 +59,7 @@ conn.close()
 
 if not df.empty:
     st.subheader("📋 Pregled radova")
-    st.info("💡 Brisanje jednog reda: Selektuj red i pritisni Delete.")
-    
-    edited_df = st.data_editor(
-        df,
-        use_container_width=True,
-        hide_index=True,
-        num_rows="dynamic",
-        key="tabela_editor"
-    )
+    edited_df = st.data_editor(df, use_container_width=True, hide_index=True, num_rows="dynamic")
     
     if len(edited_df) < len(df):
         conn = sqlite3.connect('elektro_baza.db')
@@ -79,60 +72,111 @@ if not df.empty:
     ukupno = df['metara'].sum()
     st.metric("UKUPNO METARA", f"{ukupno:.2f} m")
 
-    # 5. PROFESIONALNI IZVEŠTAJ
+    # 5. GENERISANJE IZVEŠTAJA PREMA SLICI
     st.write("---")
     if st.button("💎 GENERIŠI PROFESIONALNI IZVEŠTAJ"):
-        logo_data = ""
+        logo_base64 = ""
         if os.path.exists("elmar.webp"):
             with open("elmar.webp", "rb") as f:
                 logo_base64 = base64.b64encode(f.read()).decode()
-            logo_data = f'<img src="data:image/webp;base64,{logo_base64}" style="height:80px;">'
 
         redovi_html = ""
         for i, r in df.iterrows():
-            bg_color = "#f9f9f9" if i % 2 == 0 else "#ffffff"
             redovi_html += f"""
-            <tr style="background-color: {bg_color}; border-bottom: 1px solid #eee;">
-                <td style="padding: 8px 12px; font-size: 12px;">{r['datum']}</td>
-                <td style="padding: 8px 12px; font-weight: 600; text-transform: uppercase;">{r['orman']}</td>
-                <td style="padding: 8px 12px;">{r['opis']}</td>
-                <td style="padding: 8px 12px; text-align: right;">{r['metara']:.2f} m</td>
-                <td style="padding: 8px 12px; font-style: italic; color: #666;">{r['napomena'] if r['napomena'] else ''}</td>
-            </tr>"""
+            <tr>
+                <td>{r['datum']}</td>
+                <td style="font-weight: bold;">{r['orman']}</td>
+                <td>{r['opis']}</td>
+                <td style="text-align: right;">{r['metara']:.2f} m</td>
+                <td>{r['napomena'] if r['napomena'] else ''}</td>
+            </tr>
+            """
 
         izvestaj_html = f"""
+        <!DOCTYPE html>
         <html>
-        <head><meta charset="UTF-8"><style>
-            body {{ font-family: Arial, sans-serif; color: #333; }}
-            .header {{ border-bottom: 2px solid #2c3e50; padding-bottom: 10px; margin-bottom: 20px; }}
-            table {{ width: 100%; border-collapse: collapse; }}
-            th {{ background: #2c3e50; color: white; padding: 10px; text-align: left; font-size: 12px; }}
-            td {{ padding: 8px; border-bottom: 1px solid #eee; }}
-            .total {{ text-align: right; font-size: 20px; font-weight: bold; margin-top: 20px; }}
-        </style></head>
-        <body>
-            <div class="header">
-                {logo_data}
-                <div style="text-align:right;"><h2>Specifikacija</h2><p>Datum: {datetime.now().strftime('%d.%m.%Y')}</p></div>
-            </div>
-            <table>
-                <thead><tr><th>Datum</th><th>Orman</th><th>Strujni krug</th><th style="text-align:right;">Količina</th><th>Napomena</th></tr></thead>
-                <tbody>{redovi_html}</tbody>
-            </table>
-            <div class="total">UKUPNO: {ukupno:.2f} m</div>
-        </body>
-        </html>"""
-        
-        st.download_button("📩 PREUZMI IZVEŠTAJ", data=izvestaj_html, file_name="Specifikacija.html", mime="text/html")
+        <head>
+            <meta charset="UTF-8">
+            <style>
+                body {{ font-family: 'Helvetica', 'Arial', sans-serif; color: #34495e; padding: 40px; line-height: 1.6; }}
+                
+                /* Header sekcija */
+                .header-container {{ display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #2c3e50; padding-bottom: 20px; margin-bottom: 40px; }}
+                .logo {{ width: 120px; }}
+                .header-text {{ text-align: right; }}
+                .header-text h1 {{ margin: 0; font-size: 28px; letter-spacing: 4px; color: #2c3e50; text-transform: uppercase; }}
+                .header-text p {{ margin: 2px 0; font-size: 12px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 2px; }}
+                .header-text .date {{ margin-top: 15px; font-size: 16px; color: #2c3e50; letter-spacing: 1px; }}
 
-    # 6. BRISANJE BAZE
+                /* Tabela */
+                table {{ width: 100%; border-collapse: collapse; margin-bottom: 30px; }}
+                th {{ background-color: #2c3e50; color: #ffffff; padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }}
+                td {{ padding: 12px; border-bottom: 1px solid #ecf0f1; font-size: 13px; color: #2c3e50; }}
+                
+                /* Ukupno sekcija */
+                .total-container {{ text-align: right; margin-top: 20px; }}
+                .total-label {{ font-size: 14px; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px; }}
+                .total-amount {{ font-size: 32px; font-weight: bold; color: #2c3e50; border-bottom: 4px double #2c3e50; display: inline-block; padding-left: 10px; }}
+
+                /* Futer sa slike */
+                .footer {{ 
+                    position: fixed; bottom: 30px; left: 0; width: 100%; text-align: center; 
+                    background-color: #5dade2; color: white; padding: 8px 0; font-size: 11px; 
+                    text-transform: uppercase; letter-spacing: 1px; font-weight: bold;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="header-container">
+                <img src="data:image/webp;base64,{logo_base64}" class="logo">
+                <div class="header-text">
+                    <h1>SPECIFIKACIJA</h1>
+                    <p>UTORAŠAK MATERIJALA / KABLOVA</p>
+                    <p class="date">DATUM: {datetime.now().strftime('%d.%m.%Y')}</p>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">DATUM</th>
+                        <th style="width: 20%;">OZNAKA (RO)</th>
+                        <th style="width: 30%;">STRUJNI KRUG / OPIS RADOVA</th>
+                        <th style="width: 15%; text-align: right;">KOLIČINA</th>
+                        <th style="width: 20%;">NAPOMENA</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {redovi_html}
+                </tbody>
+            </table>
+
+            <div class="total-container">
+                <span class="total-label">UKUPNA KOLIČINA:</span>
+                <span class="total-amount">{ukupno:.2f} m</span>
+            </div>
+
+            <div class="footer">
+                ELMAR ELEKTRO-INSTALACIJE &nbsp; | &nbsp; DESIGN VLADE 2026 &nbsp; | &nbsp; INTERNI DOKUMENT
+            </div>
+        </body>
+        </html>
+        """
+        
+        st.download_button(
+            label="📩 PREUZMI PDF IZVEŠTAJ (HTML)",
+            data=izvestaj_html,
+            file_name=f"Specifikacija_{datetime.now().strftime('%d_%m_%Y')}.html",
+            mime="text/html"
+        )
+
+    # 6. BRISANJE
     st.write("---")
-    if st.checkbox("Prikaži opciju za brisanje cele baze"):
-        if st.button("❌ OBRIŠI SVE PODATKE"):
+    if st.checkbox("Prikaži opciju za brisanje"):
+        if st.button("❌ OBRIŠI SVE"):
             conn = sqlite3.connect('elektro_baza.db')
             conn.execute("DELETE FROM radovi")
-            conn.commit()
-            conn.close()
+            conn.commit(); conn.close()
             st.rerun()
 else:
     st.info("Baza je prazna.")
