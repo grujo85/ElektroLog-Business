@@ -1,26 +1,36 @@
 # ELEKTRO-LOG BUSINESS v1.0 ⚡
 
-Program za vođenje evidencije o izvedenim elektro-instalacijama, utrošku kablova i strujnim krugovima. Namenjen je elektro-instalerima za brzu izradu specifikacija radova.
+Program za vođenje evidencije o izvedenim elektro-instalacijama, utrošku kablova i strujnim krugovima. Namenjen je elektro-instalerima za brzu izradu profesionalnih specifikacija radova.
 
-## Glavne Funkcije:
-*   **Unos podataka**: Brz unos datuma, ormana (RO), strujnih krugova i metraže.
-*   **Baza podataka**: Automatsko čuvanje svih unetih radova u lokalnu SQLite bazu.
-*   **PDF/HTML Izveštaj**: Generisanje profesionalnog izveštaja sa logotipom firme, tabelarnim prikazom i automatskim sabiranjem metraže.
-*   **Backup & Restore**: Sigurnosna kopija baze i mogućnost vraćanja podataka.
+## 🚀 Glavne Funkcije
+* **Unos podataka**: Brz unos datuma, oznake ormana (RO), strujnih krugova i metraže putem intuitivne forme.
+* **Baza podataka**: Automatsko čuvanje unetih radova u lokalnu SQLite bazu podataka (`elektro_baza.db`).
+* **Pregled i Editovanje**: Interaktivna tabela unutar aplikacije koja omogućava izmenu podataka u hodu.
+* **Profesionalni Izveštaj**: Generisanje stilizovanog dokumenta sa logotipom firme, centriranom količinom i automatski izračunatim ukupnim zbirom metara.
 
-## Kako se pokreće:
-1.  Instalirajte Python (ako već niste).
-2.  Potrebno je imati logo u istom folderu pod nazivom `elmar.webp`.
-3.  Pokrenite program komandom:
-    ```bash
-    python program.py
-    ```
+## 🛠 Korišćene tehnologije
+* **Python** (Glavni programski jezik)
+* **Streamlit** (Web interfejs i interaktivnost)
+* **Pandas** (Obrada i prikaz podataka)
+* **SQLite** (Lokalna baza podataka)
+* **HTML/CSS** (Dizajn i formatiranje izveštaja za štampu)
 
-## Korišćene tehnologije:
-*   **Python** (Tkinter za interfejs)
-*   **SQLite** (Baza podataka)
-*   **HTML/CSS** (Formatiranje izveštaja za štampu)
-  
-https://elektrolog-business-jqreartnmchqekfzjtjzwv.streamlit.app/
+## 💻 Kako pokrenuti lokalno
+1. Klonirajte repozitorijum.
+2. Instalirajte potrebne biblioteke:
+   ```bash
+   pip install streamlit pandas
+   ```
+3. Postavite svoj logo u korenski folder pod nazivom `elmar.webp`.
+4. Pokrenite aplikaciju komandom:
+   ```bash
+   streamlit run utosak_materijala.py
+   ```
+
+## 🌍 Live Demo
+Aplikaciju možete testirati uživo na:  
+https://elektrolog-business-jqreartnmchqekfzjtjzwv.streamlit.app
+
 ---
-*Autor: Vlade*
+*Autor: **Vlade** (Design 2026)*
+```
