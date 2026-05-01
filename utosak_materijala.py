@@ -136,7 +136,7 @@ if not df.empty:
             <div class="header-container">
                 <img src="data:image/webp;base64,{logo_base64}" class="logo">
                 <div class="header-text">
-                    <h1>SPECIFIKACIJA</h1>
+                    <h1>SPECIFIKACIJA IZVEDENE INSTALACIJE</h1>
                     <p>UTORAŠAK MATERIJALA / KABLOVA</p>
                     <p class="date">DATUM: {datetime.now().strftime('%d.%m.%Y')}</p>
                 </div>
@@ -147,8 +147,8 @@ if not df.empty:
                     <tr>
                         <th style="width: 15%;">DATUM</th>
                         <th style="width: 25%;">OZNAKA (RO)</th>
-                        <th style="width: 15%;">STRUJNI KRUG / OPIS RADOVA</th>
-                        <th style="width: 15%; text-align: right;">KOLIČINA</th>
+                        <th style="width: 15%;">STRUJNI KRUG </th>
+                        <th style="width: 15%;">KOLIČINA</th>
                         <th style="width: 30%;">NAPOMENA</th>
                     </tr>
                 </thead>
