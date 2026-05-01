@@ -9,9 +9,9 @@ from datetime import datetime
 st.set_page_config(page_title="ELEKTRO-LOG BUSINESS", layout="wide")
 
 if os.path.exists("elmar.webp"):
-    with open("elmar.webp", "rb") as f:
-        data = base64.b64encode(f.read()).decode()
-    st.markdown(f'<img src="data:image/webp;base64,{data}" width="200">', unsafe_allow_html=True)
+    with open("elmar.webp", "rb") as f:
+        data = base64.b64encode(f.read()).decode()
+    st.markdown(f'<img src="data:image/webp;base64,{data}" width="200">', unsafe_allow_html=True)
 
 st.title("ELEKTRO-LOG BUSINESS v1.0 ⚡")
 
