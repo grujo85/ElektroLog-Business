@@ -111,7 +111,7 @@ if not df.empty:
 
                 /* Tabela */
                 table {{ width: 100%; border-collapse: collapse; margin-bottom: 30px; }}
-                th {{ background-color: #2c3e50; color: #ffffff; padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }}
+                th {{ background-color: #2c3e50; color: #ffffff; padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; text-align: center; }}
                 td {{ padding: 12px; border-bottom: 1px solid #ecf0f1; font-size: 13px; color: #2c3e50; text-align: center; word-wrap: break-word; }}
                 
                 /* Posebno pravilo za poslednju kolonu (NAPOMENA) */
@@ -146,10 +146,10 @@ if not df.empty:
                 <thead>
                     <tr>
                         <th style="width: 15%;">DATUM</th>
-                        <th style="width: 20%;">OZNAKA (RO)</th>
-                        <th style="width: 30%;">STRUJNI KRUG / OPIS RADOVA</th>
+                        <th style="width: 25%;">OZNAKA (RO)</th>
+                        <th style="width: 15%;">STRUJNI KRUG / OPIS RADOVA</th>
                         <th style="width: 15%; text-align: right;">KOLIČINA</th>
-                        <th style="width: 20%;">NAPOMENA</th>
+                        <th style="width: 30%;">NAPOMENA</th>
                     </tr>
                 </thead>
                 <tbody>
