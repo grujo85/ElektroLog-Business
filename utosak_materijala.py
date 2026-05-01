@@ -220,15 +220,3 @@ if not df.empty:
             st.rerun()
 else:
     st.info("Baza je prazna.")
-    # 6. BRISANJE CELE BAZE - VRACENO
-    st.write("---")
-    if st.checkbox("Prikaži opciju za brisanje cele baze"):
-        if st.button("❌ OBRIŠI SVE PODATKE IZ BAZE"):
-            conn = sqlite3.connect('elektro_baza.db')
-            conn.execute("DELETE FROM radovi")
-            conn.commit()
-            conn.close()
-            st.rerun()
-            
-else:
-    st.info("Baza je prazna.")          
