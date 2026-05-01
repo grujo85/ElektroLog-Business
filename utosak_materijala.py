@@ -112,7 +112,12 @@ if not df.empty:
                 /* Tabela */
                 table {{ width: 100%; border-collapse: collapse; margin-bottom: 30px; }}
                 th {{ background-color: #2c3e50; color: #ffffff; padding: 12px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }}
-                td {{ padding: 12px; border-bottom: 1px solid #ecf0f1; font-size: 13px; color: #2c3e50; }}
+                td {{ padding: 12px; border-bottom: 1px solid #ecf0f1; font-size: 13px; color: #2c3e50; text-align: center; word-wrap: break-word; }}
+                
+                /* Posebno pravilo za poslednju kolonu (NAPOMENA) */
+                td:last-child {{ 
+                    text-align: left;        /* NAPOMENA U LEVO */
+                }}
                 
                 /* Ukupno sekcija */
                 .total-container {{ text-align: right; margin-top: 20px; }}
