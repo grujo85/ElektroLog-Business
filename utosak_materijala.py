@@ -187,4 +187,4 @@ if not df.empty:
             conn.close()
             st.rerun()
 else:
-    st.info("Baza je prazna.") 
+    st.info("Baza je prazna.")
