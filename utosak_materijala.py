@@ -1,11 +1,11 @@
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
-from datetime import datetime
-import webbrowser
-import os
+import streamlit as st
+import pandas as pd
 import sqlite3
-import shutil
+import os
 import base64
+from datetime import datetime
+import webbrowser # Može ostati, ali Streamlit ima svoje metode za linkove
+import shutil
 
 class ElektroProUltra:
     def __init__(self, root):
