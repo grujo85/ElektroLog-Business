@@ -229,6 +229,6 @@ else:
             conn.commit()
             conn.close()
             st.rerun()
-# OVAJ 'else' MORA BITI U RAVNI SA 'if not df.empty:' (Linija 232)
+  # OVAJ 'else' MORA BITI U RAVNI SA 'if not df.empty:' (Linija 232)
 else:
-    st.info("Baza je prazna.")
+    st.info("Baza je prazna.")          
