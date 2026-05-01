@@ -87,7 +87,7 @@ if not df.empty:
                 <td>{r['datum']}</td>
                 <td style="font-weight: bold;">{r['orman']}</td>
                 <td>{r['opis']}</td>
-                <td class="kolicina-cell">{r['metara']:.2f} m</td>
+                <td style="text-align: center;">{r['metara']:.2f} m</td>
                 <td>{r['napomena'] if r['napomena'] else ''}</td>
             </tr>
             """
