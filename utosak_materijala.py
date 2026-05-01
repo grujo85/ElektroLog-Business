@@ -148,7 +148,7 @@ if not df.empty:
                         <th style="width: 15%;">DATUM</th>
                         <th style="width: 25%;">OZNAKA (RO)</th>
                         <th style="width: 15%;">STRUJNI KRUG </th>
-                        <th style="width: 15%;">KOLIČINA</th>
+                        <th style="width: 15%; text-align: center;">KOLIČINA</th>
                         <th style="width: 30%;">NAPOMENA</th>
                     </tr>
                 </thead>
