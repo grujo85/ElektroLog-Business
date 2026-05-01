@@ -164,7 +164,7 @@ if not df.empty:
                 </div>
 
                 <div class="footer">
-                    ELMAR Elektro-instalacije &nbsp; | &nbsp; {datetime.now().strftime("%Y")} &nbsp; | &nbsp; Interni dokument
+                    ELMAR Elektro-instalacije &nbsp; | &nbsp; DESIGN VLADE {datetime.now().strftime("%Y")} &nbsp; | &nbsp; Interni dokument
                 </div>
             </div>
         </body>
