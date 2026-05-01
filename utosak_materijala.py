@@ -87,7 +87,7 @@ if not df.empty:
                 <td>{r['datum']}</td>
                 <td style="font-weight: bold;">{r['orman']}</td>
                 <td>{r['opis']}</td>
-                <td style="text-align: right;">{r['metara']:.2f} m</td>
+                <td class="kolicina-cell">{r['metara']:.2f} m</td>
                 <td>{r['napomena'] if r['napomena'] else ''}</td>
             </tr>
             """
@@ -118,6 +118,10 @@ if not df.empty:
                 td:last-child {{ 
                     text-align: left;        /* NAPOMENA U LEVO */
                 }}
+
+                .kolicina-cell {
+                    text-align: center !important;
+                }
                 
                 /* Ukupno sekcija */
                 .total-container {{ text-align: right; margin-top: 20px; }}
