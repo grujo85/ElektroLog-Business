@@ -81,7 +81,7 @@ if not df.empty:
     ukupno = df['metara'].sum()
     st.metric("UKUPNO METARA", f"{ukupno:.2f} m")
 
-   # 5. PROFESIONALNI MEMORANDUM (PREMIUM DIZAJN)
+   # 5. PROFESIONALNI MEMORANDUM (PREMIUM DIZAJN SA GRUPISANJEM)
     st.write("---")
     if st.button("💎 GENERIŠI PROFESIONALNI IZVEŠTAJ"):
         # 1. Priprema logotipa (Base64)
@@ -91,81 +91,112 @@ if not df.empty:
                 logo_base64 = base64.b64encode(f.read()).decode()
             logo_data = f'<img src="data:image/webp;base64,{logo_base64}" style="height:80px;">'
 
-        # 2. Generisanje redova tabele - SMANJENO I DISKRETNIJE
-        redovi_html = ""
-        for i, r in df.iterrows():
+        # 2. Sortiranje podataka po ormanu za grupisanje
+        df_sorted = df.sort_values(by="orman")
+        
+        html_tabele = ""
+        prethodni_orman = None
+        
+        for i, r in df_sorted.iterrows():
+            trenutni_orman = r['orman']
+            
+            # Ako se promeni orman, zatvori staru i otvori novu tabelu
+            if trenutni_orman != prethodni_orman:
+                if prethodni_orman is not None:
+                    html_tabele += "</tbody></table><br>"
+                
+                html_tabele += f"""
+                <h3 style="margin-top:30px; color:#2c3e50; border-left: 4px solid #2c3e50; padding-left:10px; text-transform: uppercase; font-size: 14px;">
+                    ORMAN: {trenutni_orman}
+                </h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Datum</th>
+                            <th style="width: 20%;">Oznaka (RO)</th>
+                            <th style="width: 20%;">Strujni krug</th>
+                            <th style="width: 15%; text-align: right;">Količina</th>
+                            <th style="width: 30%;">Napomena</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                """
+                prethodni_orman = trenutni_orman
+            
             bg_color = "#f9f9f9" if i % 2 == 0 else "#ffffff"
-            redovi_html += f"""
+            html_tabele += f"""
             <tr style="background-color: {bg_color}; border-bottom: 1px solid #eee;">
-                <td style="padding: 8px 12px; color: #666; font-size: 12px;">{r['datum']}</td>
-                
-                
-                <td style="padding: 8px 12px; font-weight: 500; text-transform: uppercase; font-size: 13px;">{r['orman']}</td>
-                
-                <td style="padding: 8px 12px; font-size: 13px;">{r['opis']}</td>
-                
-                
-                <td style="padding: 8px 12px; text-align: right; font-weight: 500; font-size: 12px;">{r['metara']:.2f} m</td>
-                
-                <td style="padding: 8px 12px; color: #888; font-size: 11px; font-style: italic;">{r['napomena'] if r['napomena'] else ''}</td>
+                <td style="padding: 8px 12px; color: #666; font-size: 12px; text-align: center;">{r['datum']}</td>
+                <td style="padding: 8px 12px; font-weight: 500; font-size: 13px; text-align: center; white-space: nowrap;">{r['orman']}</td>
+                <td style="padding: 8px 12px; font-size: 13px; text-align: center;">{r['opis']}</td>
+                <td style="padding: 8px 12px; text-align: right; font-weight: bold; font-size: 12px;">{r['metara']:.2f} m</td>
+                <td style="padding: 8px 12px; color: #444; font-size: 11px; text-align: left;">{r['napomena'] if r['napomena'] else ''}</td>
             </tr>
             """
 
-        # 3. HTML Memoranduma
+        html_tabele += "</tbody></table>"
+
+        # 3. Finalni HTML sa fiksnim futerom na dnu svake strane
         izvestaj_html = f"""
         <!DOCTYPE html>
         <html lang="sr">
         <head>
             <meta charset="UTF-8">
             <style>
-                @page {{ size: A4; margin: 20mm; }}
-                body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #2c3e50; margin: 0; padding: 0; }}
-                .wrapper {{ max-width: 800px; margin: auto; }}
-                @media print {{ @page {{ margin: 0; }} body {{ padding: 1.5cm; }} }}
-                .header-table {{ width: 100%; border-bottom: 2px solid #2c3e50; padding-bottom: 20px; margin-bottom: 30px; }}
-                .doc-title {{ text-align: right; text-transform: uppercase; letter-spacing: 2px; color: #2c3e50; }}
-                table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
-                th {{ background-color: #2c3e50; color: white; text-align: left; padding: 12px 15px; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }}
-                .total-row {{ border-top: 3px solid #2c3e50; margin-top: 20px; padding: 20px 0; display: flex; justify-content: flex-end; align-items: baseline; }}
-                .footer {{ margin-top: 100px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 10px; color: #bdc3c7; text-transform: uppercase; letter-spacing: 1px; }}
+                @page {{ 
+                    size: A4; 
+                    margin: 20mm 15mm 25mm 15mm; 
+                }}
+                body {{ 
+                    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+                    color: #2c3e50; 
+                    margin: 0; 
+                    padding-bottom: 50px; 
+                }}
+                .header-table {{ width: 100%; border-bottom: 2px solid #2c3e50; padding-bottom: 20px; margin-bottom: 20px; }}
+                .doc-title {{ text-align: right; text-transform: uppercase; letter-spacing: 1px; }}
+                
+                table {{ width: 100%; border-collapse: collapse; table-layout: fixed; page-break-inside: auto; }}
+                tr {{ page-break-inside: avoid; page-break-after: auto; }}
+                th {{ background-color: #2c3e50; color: white; padding: 10px; text-transform: uppercase; font-size: 10px; text-align: center; }}
+                
+                .total-row {{ border-top: 3px solid #2c3e50; margin-top: 30px; padding: 20px 0; text-align: right; }}
+                
+                /* FIXIRANI FUTER ZA SVAKU STRANU */
+                .print-footer {{
+                    position: fixed;
+                    bottom: -10mm;
+                    left: 0;
+                    width: 100%;
+                    text-align: center;
+                    font-size: 10px;
+                    color: #bdc3c7;
+                    border-top: 1px solid #eee;
+                    padding-top: 10px;
+                    background: white;
+                }}
             </style>
         </head>
         <body>
-            <div class="wrapper">
-                <table class="header-table">
-                    <tr>
-                        <td style="width: 50%;">{logo_data}</td>
-                        <td class="doc-title">
-                            <h2 style="margin:0;">Specifikacija</h2>
-                            <p style="margin:0; font-size: 12px; opacity: 0.7;">Utorašak materijala / Kablova</p>
-                            <p>Datum: {datetime.now().strftime('%d.%m.%Y')}</p></div>
-                        </td>
-                    </tr>
-                </table>
+            <table class="header-table">
+                <tr>
+                    <td style="width: 50%;">{logo_data}</td>
+                    <td class="doc-title">
+                        <h2 style="margin:0; font-size: 18px;">Specifikacija radova</h2>
+                        <p style="margin:5px 0; font-size: 12px;">Datum: {datetime.now().strftime('%d.%m.%Y')}</p>
+                    </td>
+                </tr>
+            </table>
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Datum</th>
-                            <th>Oznaka (RO)</th>
-                            <th>Strujni krug / Opis radova</th>
-                            <th style="text-align: right;">Količina</th>
-                            <th>Napomena</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {redovi_html}
-                    </tbody>
-                </table>
+            {html_tabele}
 
-                <div class="total-row">
-                    <span style="font-size: 14px; margin-right: 15px; font-weight: 300;">UKUPNA KOLIČINA:</span>
-                    <span style="font-size: 28px; font-weight: 800; border-bottom: 4px double #2c3e50;">{ukupno:.2f} m</span>
-                </div>
+            <div class="total-row">
+                <span style="font-size: 14px; font-weight: 300;">UKUPNA KOLIČINA:</span>
+                <span style="font-size: 24px; font-weight: 800; border-bottom: 3px double #2c3e50; margin-left: 10px;">{ukupno:.2f} m</span>
+            </div>
 
-                <div class="footer">
-                    ELMAR Elektro-instalacije &nbsp; | &nbsp; DESIGN VLADE {datetime.now().strftime("%Y")} &nbsp; | &nbsp; Interni dokument
-                </div>
+            <div class="print-footer">
+                ELMAR Elektro-instalacije &nbsp; | &nbsp; DESIGN VLADE 2026 &nbsp; | &nbsp; Interni dokument
             </div>
         </body>
         </html>
@@ -174,9 +205,21 @@ if not df.empty:
         st.download_button(
             label="📩 PREUZMI PROFESIONALNI IZVEŠTAJ",
             data=izvestaj_html,
-            file_name=f"Elmar_Business_Spec_{datetime.now().strftime('%d_%m_%y')}.html",
+            file_name=f"Elmar_Spec_{datetime.now().strftime('%d_%m_%y')}.html",
             mime="text/html"
         )
+
+    # 6. BRISANJE CELE BAZE
+    st.write("---")
+    if st.checkbox("Prikaži opciju za brisanje cele baze"):
+        if st.button("❌ OBRIŠI SVE PODATKE IZ BAZE"):
+            conn = sqlite3.connect('elektro_baza.db')
+            conn.execute("DELETE FROM radovi")
+            conn.commit()
+            conn.close()
+            st.rerun()
+else:
+    st.info("Baza je prazna.")
     # 6. BRISANJE CELE BAZE - VRACENO
     st.write("---")
     if st.checkbox("Prikaži opciju za brisanje cele baze"):
