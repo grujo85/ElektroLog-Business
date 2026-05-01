@@ -229,5 +229,6 @@ else:
             conn.commit()
             conn.close()
             st.rerun()
+            
 else:
     st.info("Baza je prazna.")          
