@@ -116,7 +116,15 @@ class ElektroProUltra:
                 padding-top: 15px; 
             }}
         </style></head><body>
-            <div class='header'>{logo_img} <div><h1>SPECIFIKACIJA RADOVA</h1></div></div>
+            <div class='header'>
+                {logo_img} 
+                <div style="flex-grow: 1;">
+                    <h1 style="margin:0; text-align: right;">SPECIFIKACIJA RADOVA</h1>
+                    <p style="margin:0; color: #4a5568; text-align: right; width: 100%;">
+                        Datum: {datetime.now().strftime('%d.%m.%Y')}
+                    </p>
+                </div>
+            </div>
             
             <table>
                 <tr><th>Datum</th><th>Orman</th><th>Krug</th><th>Tip</th><th>Kol</th><th>Napomena</th></tr>
