@@ -4,8 +4,8 @@ import pandas as pd     # Za lakši prikaz tabela na webu
 from datetime import datetime
 import os
 import base64
------------------------------------------------------------------------------------------------------
-UKLONI NA SVOM DESTOPU KOMENTARE I OBRISI GORNJI UNOS
+#-----------------------------------------------------------------------------------------------------
+#UKLONI NA SVOM DESTOPU KOMENTARE I OBRISI GORNJI UNOS
 #import tkinter as tk  # Uvoz glavne biblioteke za grafički interfejs
 #from tkinter import ttk, messagebox, filedialog  # Uvoz dodatnih vidžeta, dijaloga i birača fajlova
 #from datetime import datetime  # Uvoz biblioteke za rad sa datumom i vremenom
@@ -14,7 +14,7 @@ UKLONI NA SVOM DESTOPU KOMENTARE I OBRISI GORNJI UNOS
 #import sqlite3  # Uvoz biblioteke za rad sa SQLite bazom podataka
 #import shutil  # Uvoz biblioteke za kopiranje fajlova (korišćeno za backup/restore)
 #import base64  # Uvoz biblioteke za enkodiranje slika u tekstualni format
-------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------
 
 class ElektroProUltra:  # Definicija glavne klase aplikacije
     def __init__(self, root):  # Konstruktor klase koji inicijalizuje glavni prozor
