@@ -18,7 +18,7 @@ Projekat je podeljen na dve funkcionalne celine:
 *   **Export Izveštaja:** Generisanje stilizovanog HTML dokumenta sa logotipom firme **ELMAR**, spremnog za štampu ili slanje investitoru.
 
 ## 🚀 Instalacija i Pokretanje
-
+```
 ### 1. Web/Mobile Verzija (Streamlit)
 Ova verzija je primarna za rad na terenu:
 ```bash
