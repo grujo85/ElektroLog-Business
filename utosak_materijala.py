@@ -85,7 +85,8 @@ class ElektroProUltra:
 
     # TVOJ ORIGINALNI HTML IZVEŠTAJ - KOMPLETAN STIL
     def generisi_html(self, df, tm, tk):
-        logo_img = f'<img src="data:image/webp;base64,{self.logo_data}" style="height:80px;">' if self.logo_data else ""
+        # Povećan logo na 120px i dodat blend mode da se stopi sa pozadinom
+        logo_img = f'<img src="data:image/webp;base64,{self.logo_data}" style="height:120px; mix-blend-mode: multiply;">' if self.logo_data else ""
         rows = ""
         for _, r in df.iterrows():
             rows += f"<tr><td>{r['datum']}</td><td>{r['orman']}</td><td>{r['opis']}</td><td><b>{r['tip']}</b></td><td>{r['kol']} {r['jed']}</td><td>{r['napomena']}</td></tr>"
@@ -115,7 +116,7 @@ class ElektroProUltra:
                 padding-top: 15px; 
             }}
         </style></head><body>
-            <div class='header'>{logo_img} <div><h1>IZVEŠTAJ</h1></div></div>
+            <div class='header'>{logo_img} <div><h1>SPECIFIKACIJA RADOVA</h1></div></div>
             
             <table>
                 <tr><th>Datum</th><th>Orman</th><th>Krug</th><th>Tip</th><th>Kol</th><th>Napomena</th></tr>
