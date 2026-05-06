@@ -109,7 +109,9 @@ class ElektroProUltra:
 # ==============================================================================
 app = ElektroProUltra()
 
-st.title("⚡ ELEKTRO-LOG BUSINESS PRO")
+# --- PRIKAZ LOGA NA VRHU ---
+if app.logo_data:
+    st.markdown(f'<div style="text-align: center;"><img src="data:image/webp;base64,{app.logo_data}" style="max-height: 100px;"></div>', unsafe_allow_html=True)
 
 # Gornji panel: Unos podataka
 with st.expander("📝 UNOS NOVE STAVKE", expanded=True):
