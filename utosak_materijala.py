@@ -93,15 +93,38 @@ class ElektroProUltra:
         return f"""
         <html><head><meta charset='UTF-8'><style>
             body {{ font-family: 'Segoe UI', sans-serif; margin: 30px; }}
-            .header {{ display: flex; justify-content: space-between; border-bottom: 4px solid #3182ce; padding-bottom: 10px; }}
             table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
             th {{ background: #3182ce; color: white; padding: 10px; }}
             td {{ border-bottom: 1px solid #ddd; padding: 10px; text-align: center; }}
-            .footer {{ margin-top: 20px; text-align: right; font-size: 20px; font-weight: bold; }}
+            
+            /* STIL ZA SUMU (METRAŽU) */
+            .summary-box {{ 
+                margin-top: 20px; 
+                text-align: right; 
+                font-size: 18px; 
+                font-weight: bold; 
+            }}
+            
+            /* STIL ZA TVOJ POTPIS NA DNU */
+            .footer {{ 
+                margin-top: 60px; 
+                text-align: center; 
+                font-size: 11px; 
+                color: #888888; 
+                border-top: 1px solid #eeeeee; 
+                padding-top: 15px; 
+            }}
         </style></head><body>
-            <div class='header'>{logo_img} <div><h1>IZVEŠTAJ SPECIFIKACIJE</h1><p>{datetime.now().strftime('%d.%m.%Y')}</p></div></div>
-            <table><tr><th>Datum</th><th>Orman</th><th>Strujni krug</th><th>Tip materijala</th><th>Količina</th><th>Napomena</th></tr>{rows}</table>
-            <div class='footer'>UKUPNO KABLOVA: {tm:.2f} m | {int(tk)} kom</div>
+            <div class='header'>{logo_img} <div><h1>IZVEŠTAJ</h1></div></div>
+            
+            <table>
+                <tr><th>Datum</th><th>Orman</th><th>Krug</th><th>Tip</th><th>Kol</th><th>Napomena</th></tr>
+                {rows}
+            </table>
+            
+            <div class='summary-box'>UKUPNO KABLOVA: {tm:.2f} m | {int(tk)} kom</div>
+            
+            <!-- TVOJ SIVI CENTRIRANI FOOTER -->
             <div class="footer">
                 ELMAR ELEKTRO-INSTALACIJE &nbsp; | &nbsp; DESIGN VLADE 2026 &nbsp; | &nbsp; INTERNI DOKUMENT
             </div>
