@@ -1,36 +1,53 @@
-# ELEKTRO-LOG BUSINESS v1.0 ⚡
+# ⚡ ELEKTRO-LOG BUSINESS v1.0
 
-Program za vođenje evidencije o izvedenim elektro-instalacijama, utrošku kablova i strujnim krugovima. Namenjen je elektro-instalerima za brzu izradu profesionalnih specifikacija radova.
+Sistem za digitalno praćenje elektro-instalaterskih radova, specifikaciju materijala i automatski obračun metraže.
 
-## 🚀 Glavne Funkcije
-* **Unos podataka**: Brz unos datuma, oznake ormana (RO), strujnih krugova i metraže putem intuitivne forme.
-* **Baza podataka**: Automatsko čuvanje unetih radova u lokalnu SQLite bazu podataka (`elektro_baza.db`).
-* **Pregled i Editovanje**: Interaktivna tabela unutar aplikacije koja omogućava izmenu podataka u hodu.
-* **Profesionalni Izveštaj**: Generisanje stilizovanog dokumenta sa logotipom firme, centriranom količinom i automatski izračunatim ukupnim zbirom metara.
+## 📌 O Projektu
+Aplikacija je dizajnirana da olakša posao elektro-instalaterima na terenu. Omogućava preciznu evidenciju utrošenog materijala, automatski odvaja metražu kablova od ostale montažne opreme (regali, C-šine, brezoni) i generiše profesionalne izveštaje.
 
-## 🛠 Korišćene tehnologije
-* **Python** (Glavni programski jezik)
-* **Streamlit** (Web interfejs i interaktivnost)
-* **Pandas** (Obrada i prikaz podataka)
-* **SQLite** (Lokalna baza podataka)
-* **HTML/CSS** (Dizajn i formatiranje izveštaja za štampu)
+## 📁 Struktura Projekta
 
-## 💻 Kako pokrenuti lokalno
-1. Klonirajte repozitorijum.
-2. Instalirajte potrebne biblioteke:
-   ```bash
-   pip install streamlit pandas
-   ```
-3. Postavite svoj logo u korenski folder pod nazivom `elmar.webp`.
-4. Pokrenite aplikaciju komandom:
-   ```bash
-   streamlit run utosak_materijala.py
-   ```
+Projekat je podeljen na dve funkcionalne celine:
+
+*   **`Web/Mobile Verzija` (Glavni folder):** Bazirana na **Streamlit** okviru. Ova verzija je optimizovana za korišćenje putem mobilnih telefona na gradilištu.
+*   **[`Desktop_Tkinter`](./Desktop_Tkinter):** Originalna verzija aplikacije sa klasičnim Windows/Linux interfejsom. Pogodna za kancelarijsku obradu podataka i unos sa desktop računara.
+
+## ✨ Ključne Funkcije
+*   **Pametno filtriranje:** Sistem automatski prepoznaje jedinice mere (metri vs komadi) i vrši kalkulaciju totala samo za kablove.
+*   **SQLite Baza:** Svi podaci se čuvaju u lokalnoj bazi `elektro_baza.db`, što omogućava rad bez stalne internet konekcije (u Desktop verziji).
+*   **Export Izveštaja:** Generisanje stilizovanog HTML dokumenta sa logotipom firme **ELMAR**, spremnog za štampu ili slanje investitoru.
+
+## 🚀 Instalacija i Pokretanje
+
+### 1. Web/Mobile Verzija (Streamlit)
+Ova verzija je primarna za rad na terenu:
+```bash
+pip install streamlit pandas
+streamlit run utosak_materijala.py
+
+## **2. Desktop Verzija (Tkinter)**
+
+Nalazi se u folderu Desktop_Tkinter:
+Bash
+
+cd Desktop_Tkinter
+python utrosak_materijala.py
+
+## **📋 Potrebne Biblioteke**
+
+Sve potrebne biblioteke možete instalirati odjednom komandom:
+Bash
+
+pip install -r requirements.txt
+
+
 
 ## 🌍 Live Demo
 Aplikaciju možete testirati uživo na:  
 https://elektrolog-business-jqreartnmchqekfzjtjzwv.streamlit.app
 
 ---
-*Autor: **Vlade** (Design 2026)*
+📝 Autor
+
+    Inženjering i razvoj: Vlade (2026)
 ```
