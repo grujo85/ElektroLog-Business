@@ -102,6 +102,9 @@ class ElektroProUltra:
             <div class='header'>{logo_img} <div><h1>IZVEŠTAJ SPECIFIKACIJE</h1><p>{datetime.now().strftime('%d.%m.%Y')}</p></div></div>
             <table><tr><th>Datum</th><th>Orman</th><th>Strujni krug</th><th>Tip materijala</th><th>Količina</th><th>Napomena</th></tr>{rows}</table>
             <div class='footer'>UKUPNO KABLOVA: {tm:.2f} m | {int(tk)} kom</div>
+            <div class="footer">
+                ELMAR ELEKTRO-INSTALACIJE &nbsp; | &nbsp; DESIGN VLADE 2026 &nbsp; | &nbsp; INTERNI DOKUMENT
+            </div>
         </body></html>"""
 
 # ==============================================================================
