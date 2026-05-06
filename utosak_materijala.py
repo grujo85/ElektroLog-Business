@@ -11,30 +11,15 @@ import base64
 st.set_page_config(
     page_title="ELEKTRO-LOG BUSINESS v1.0",
     layout="wide",
-    initial_sidebar_state="collapsed" # Sakrij sidebar na telefonu za više mesta
+    initial_sidebar_state="expanded"
 )
 
-# Custom CSS za bolje "touch" iskustvo i sivi footer
+# Custom CSS da zadržimo onaj tvoj "Business" izgled (plave nijanse)
 st.markdown("""
     <style>
     .main { background-color: #f8f9fa; }
-    /* Veći tasteri za lakše kliktanje na telefonu */
-    .stButton>button { 
-        width: 100%; 
-        border-radius: 8px; 
-        height: 3.5em; 
-        background-color: #3182ce; 
-        color: white; 
-        font-weight: bold;
-    }
-    .stTextInput>div>div>input { text-transform: uppercase; padding: 12px; }
-    /* Kartice za metrike */
-    div[data-testid="stMetric"] {
-        background-color: white;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
+    .stButton>button { width: 100%; border-radius: 5px; height: 3em; background-color: #3182ce; color: white; }
+    .stTextInput>div>div>input { text-transform: uppercase; }
     </style>
     """, unsafe_allow_html=True)
 
