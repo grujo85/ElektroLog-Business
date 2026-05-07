@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # ==============================================================================
-# 2. KLASA ZA PDF (Bez linija, centrirano)
+# 2. KLASA ZA PDF (Bez linija, centrirano, sa napomenom)
 # ==============================================================================
 class PDFSpec(FPDF):
     def header(self):
@@ -70,7 +70,6 @@ class ElektroProUltra:
         pdf = PDFSpec()
         pdf.add_page()
         
-        # Plavo zaglavlje (bez bordera)
         pdf.set_fill_color(49, 130, 206) 
         pdf.set_text_color(255)
         pdf.set_font("Arial", "B", 9)
@@ -84,7 +83,6 @@ class ElektroProUltra:
             pdf.cell(width, 10, col_name, border=0, align="C", fill=True)
         pdf.ln()
 
-        # Podaci - Centrirani, bez linija
         pdf.set_text_color(0)
         pdf.set_font("Arial", "", 8)
         
@@ -107,29 +105,44 @@ class ElektroProUltra:
         return pdf.output()
 
 # ==============================================================================
-# 4. INTERFEJS
+# 4. INTERFEJS (Streamlit)
 # ==============================================================================
 app = ElektroProUltra()
 
-# SIDEBAR
 with st.sidebar:
     st.header("⚙️ SISTEM")
+    
+    # 1. BACKUP
     if os.path.exists(app.db_name):
         with open(app.db_name, "rb") as f:
-            st.download_button("📥 BACKUP BAZE", f, file_name="backup.db")
+            st.download_button("📥 PREUZMI REZERVNU KOPIJU (Backup)", f, file_name="elektro_baza_backup.db")
     
     st.divider()
-    st.subheader("🗑️ OPASNA ZONA")
-    potvrda = st.checkbox("Potvrđujem brisanje svih podataka")
-    if st.button("🔴 OBRIŠI SVE PODATKE"):
+    
+    # 2. RESTORE
+    st.subheader("📤 VRATI PODATKE (Restore)")
+    fajl_za_vracanje = st.file_uploader("Ubaci .db fajl", type="db")
+    if fajl_za_vracanje is not None:
+        if st.button("⚠️ POTVRDI RESTORE"):
+            with open(app.db_name, "wb") as f:
+                f.write(fajl_za_vracanje.getbuffer())
+            st.success("Podaci su uspešno vraćeni!")
+            st.rerun()
+
+    st.divider()
+    
+    # 3. DELETE ALL
+    st.subheader("🗑️ BRISANJE")
+    potvrda = st.checkbox("Potvrđujem brisanje cele baze")
+    if st.button("🔴 OBRIŠI SVE"):
         if potvrda:
             app.obrisi_sve()
             st.success("Baza je ispražnjena!")
             st.rerun()
         else:
-            st.warning("Prvo štikliraj potvrdu iznad!")
+            st.warning("Prvo štikliraj potvrdu!")
 
-# UNOS
+# GLAVNI EKRAN - UNOS
 with st.expander("📝 UNOS NOVE STAVKE"):
     with st.form("forma", clear_on_submit=True):
         c1, c2, c3 = st.columns(3)
@@ -145,7 +158,7 @@ with st.expander("📝 UNOS NOVE STAVKE"):
             app.sacuvaj_u_bazu((dat, orm, krug, tip, kol, jed, nap))
             st.rerun()
 
-# RAD SA PODACIMA
+# PRIKAZ I PDF
 with sqlite3.connect(app.db_name) as conn:
     df_prikaz = pd.read_sql_query("SELECT * FROM radovi ORDER BY id DESC", conn)
 
@@ -159,7 +172,7 @@ if not df_prikaz.empty:
 
     st.metric("UKUPNO METARA", f"{suma_m:.2f} m")
 
-    edited_df = st.data_editor(df_prikaz, use_container_width=True, hide_index=True)
+    edited_df = st.data_editor(df_prikaz, use_container_width=True, hide_index=True, num_rows="dynamic")
 
     if st.button("✅ SAČUVAJ IZMENE"):
         app.azuriraj_bazu(edited_df)
@@ -167,7 +180,6 @@ if not df_prikaz.empty:
         st.rerun()
 
     st.divider()
-    # PDF Dugme
     pdf_output = app.generisi_pdf(edited_df, suma_m, suma_k)
     st.download_button("📄 PREUZMI PDF IZVEŠTAJ", bytes(pdf_output), "izvestaj.pdf", "application/pdf")
 else:
