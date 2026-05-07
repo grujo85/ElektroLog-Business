@@ -83,40 +83,43 @@ class ElektroProUltra:
         pdf = PDFSpec()
         pdf.add_page()
         
-        # Plavo zaglavlje
+        # Plavo zaglavlje (ovde ostavljamo border=0 da nema linija ni oko naslova)
         pdf.set_fill_color(49, 130, 206) 
         pdf.set_text_color(255)
         pdf.set_font("Arial", "B", 9)
         
-        # Širine kolona (ukupno 190mm)
         cols = [
             ("Datum", 22), ("RO", 18), ("Krug", 15), 
             ("Tip materijala", 60), ("Kol", 15), ("Jed", 10), ("Napomena", 50)
         ]
         
         for col_name, width in cols:
-            pdf.cell(width, 10, col_name, border=1, align="C", fill=True)
+            # border=0 uklanja linije
+            pdf.cell(width, 10, col_name, border=0, align="C", fill=True)
         pdf.ln()
 
-        # Podaci - Centrirani
+        # Podaci - Centrirani, BEZ LINIJA
         pdf.set_text_color(0)
         pdf.set_font("Arial", "", 8)
         
-        # Filtriranje praznih redova iz editora
         df_clean = df.dropna(subset=['datum', 'orman', 'tip'])
 
         for _, r in df_clean.iterrows():
-            pdf.cell(22, 8, str(r['datum']), border=1, align="C")
-            pdf.cell(18, 8, str(r['orman']), border=1, align="C")
-            pdf.cell(15, 8, str(r['opis']), border=1, align="C")
-            pdf.cell(60, 8, str(r['tip']), border=1, align="C")
-            pdf.cell(15, 8, str(r['kol']), border=1, align="C")
-            pdf.cell(10, 8, str(r['jed']), border=1, align="C")
+            # Svuda menjamo border=1 u border=0
+            pdf.cell(22, 8, str(r['datum']), border=0, align="C")
+            pdf.cell(18, 8, str(r['orman']), border=0, align="C")
+            pdf.cell(15, 8, str(r['opis']), border=0, align="C")
+            pdf.cell(60, 8, str(r['tip']), border=0, align="C")
+            pdf.cell(15, 8, str(r['kol']), border=0, align="C")
+            pdf.cell(10, 8, str(r['jed']), border=0, align="C")
             
-            # Napomena centrirana (prazno ako je None)
             nap = str(r['napomena']) if r['napomena'] and str(r['napomena']) != 'None' else ""
-            pdf.cell(50, 8, nap, border=1, align="C")
+            pdf.cell(50, 8, nap, border=0, align="C")
             pdf.ln()
+            
+            # Opciono: Možeš dodati tanku sivu liniju ispod svakog reda za bolju preglednost
+            # pdf.set_draw_color(230, 230, 230)
+            # pdf.line(10, pdf.get_y(), 200, pdf.get_y())
 
         pdf.ln(5)
         pdf.set_font("Arial", "B", 11)
