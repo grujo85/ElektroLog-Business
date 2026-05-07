@@ -40,50 +40,52 @@ class PDFSpec(FPDF):
 class ElektroProUltra:
     def __init__(self):
         self.db_name = "elektro_baza.db"
-        self.tipovi = [  # Lista svih dostupnih materijala u padajućem meniju
-            # Nosači i oprema
-            "Brezon M8", "Brezon M10", "C-šina 30x20", "C-šina 41x21", 
-            "Regal 50", "Regal 100", "Regal 150", "Regal 200", "Regal 300", "Regal 400", "Regal 500", "Regal 600",
-            "LR Krivina", "LR T-komad", "Poklopac regala",
-            
-            # Instalacioni kablovi (PP-Y / NYM)
-            "PP-Y 2x1.5", "PP-Y 3x1.5", "PP-Y 3x2.5", "PP-Y 3x4", "PP-Y 4x1.5", "PP-Y 4x2.5", "PP-Y 4x4",
-            "PP-Y 5x1.5", "PP-Y 5x2.5", "PP-Y 5x4", "PP-Y 5x6", "PP-Y 5x10", "PP-Y 5x16",
-            
-            # Bezhalogeni kablovi (N2XH)
-            "N2XH-J 3x1.5", "N2XH-J 3x2.5", "N2XH-J 3x4", "N2XH-J 5x1.5", "N2XH-J 5x2.5", "N2XH-J 5x4",
-            "N2XH-J 5x6", "N2XH-J 5x10", "N2XH-J 5x16", "N2XH-J 5x25", "N2XH-J 5x35", "N2XH-J 5x50",
-            
-            # Vatrootporni kablovi (FE180)
-            "NHXH FE180 3x1.5", "NHXH FE180 3x2.5", "NHXH FE180 5x1.5", "NHXH FE180 5x2.5", "NHXH FE180 5x4", "NHXH FE180 5x6",
-            
-            # Energetski kablovi (PP00 / NYY)
-            "PP00 3x1.5", "PP00 3x2.5", "PP00 4x1.5", "PP00 4x2.5", "PP00 4x4", "PP00 4x6", "PP00 4x10",
-            "PP00 4x16", "PP00 4x25", "PP00 4x35", "PP00 4x50", "PP00 4x70", "PP00 4x95", "PP00 4x120",
-            "PP00 4x150", "PP00 4x185", "PP00 4x240", "PP00 5x1.5", "PP00 5x2.5", "PP00 5x4", "PP00 5x6",
-            "PP00 5x10", "PP00 5x16", 
-            
-            # Aluminijumski kablovi (PP00-A / NAYY)
-            "PP00-A (Al) 4x16", "PP00-A 4x25", "PP00-A 4x35", "PP00-A 4x50", 
-            "PP00-A 4x70", "PP00-A 4x95", "PP00-A 4x120", "PP00-A 4x150", "PP00-A 4x240",
-            
-            # Gumeni kablovi (H07RN-F)
-            "H07RN-F (GG/J) 3x1.5", "H07RN-F 3x2.5", "H07RN-F 5x1.5", "H07RN-F 5x2.5", "H07RN-F 5x4", 
-            "H07RN-F 5x6", "H07RN-F 5x10", "H07RN-F 5x16", 
-            
-            # Signalni i kontrolni (LiYCY)
-            "LiYCY 2x0.75", "LiYCY 3x0.75", "LiYCY 4x0.75", "LiYCY 5x0.75", "LiYCY 7x0.75", "LiYCY 12x0.75",
-            
-            # Provodnici (P, P/F)
-            "P/F (H07V-K) 0.75", "P/F 1.5", "P/F 2.5", "P/F 4", "P/F 6", "P/F 10", "P/F 16", "P/F 25", "P/F 35", "P/F 50",
-            "P (H07V-U) 1.5", "P 2.5", "P 4", "P 6", 
-            
-            # Vazdušni snop (SKS) i specijalni
-            "SKS 2x16", "SKS 4x16", "SKS 4x25",
-            "UTP Cat5e", "FTP Cat6", "SFTP Cat7", "Koaksijalni RG6", "Koaksijalni RG11",
-            "Alarmni 4x0.22", "Alarmni 6x0.22", "Alarmni 8x0.22", "JH(St)H 2x2x0.8", "JH(St)H 4x2x0.8",
-            "Solarni 4mm2", "Solarni 6mm2"
-        ]
+        # Ovaj rečnik stavi unutar __init__ metode ili na početak skripte
+self.kategorije_materijala = {
+    "Nosači i oprema": [
+        "Brezon M8", "Brezon M10", "C-šina 30x20", "C-šina 41x21", 
+        "Regal 50", "Regal 100", "Regal 150", "Regal 200", "Regal 300", 
+        "Regal 400", "Regal 500", "Regal 600", "LR Krivina", "LR T-komad", "Poklopac regala"
+    ],
+    "Instalacioni kablovi (PP-Y)": [
+        "PP-Y 2x1.5", "PP-Y 3x1.5", "PP-Y 3x2.5", "PP-Y 3x4", "PP-Y 4x1.5", 
+        "PP-Y 4x2.5", "PP-Y 4x4", "PP-Y 5x1.5", "PP-Y 5x2.5", "PP-Y 5x4", 
+        "PP-Y 5x6", "PP-Y 5x10", "PP-Y 5x16"
+    ],
+    "Bezhalogeni kablovi (N2XH)": [
+        "N2XH-J 3x1.5", "N2XH-J 3x2.5", "N2XH-J 3x4", "N2XH-J 5x1.5", 
+        "N2XH-J 5x2.5", "N2XH-J 5x4", "N2XH-J 5x6", "N2XH-J 5x10", 
+        "N2XH-J 5x16", "N2XH-J 5x25", "N2XH-J 5x35", "N2XH-J 5x50"
+    ],
+    "Vatrootporni kablovi (FE180)": [
+        "NHXH FE180 3x1.5", "NHXH FE180 3x2.5", "NHXH FE180 5x1.5", 
+        "NHXH FE180 5x2.5", "NHXH FE180 5x4", "NHXH FE180 5x6"
+    ],
+    "Energetski kablovi (PP00)": [
+        "PP00 3x1.5", "PP00 3x2.5", "PP00 4x1.5", "PP00 4x2.5", "PP00 4x4", 
+        "PP00 4x6", "PP00 4x10", "PP00 4x16", "PP00 4x25", "PP00 4x35", 
+        "PP00 4x50", "PP00 4x70", "PP00 4x95", "PP00 4x120", "PP00 4x150", 
+        "PP00 4x185", "PP00 4x240", "PP00 5x1.5", "PP00 5x2.5", "PP00 5x4", 
+        "PP00 5x6", "PP00 5x10", "PP00 5x16"
+    ],
+    "Aluminijumski kablovi (PP00-A)": [
+        "PP00-A (Al) 4x16", "PP00-A 4x25", "PP00-A 4x35", "PP00-A 4x50", 
+        "PP00-A 4x70", "PP00-A 4x95", "PP00-A 4x120", "PP00-A 4x150", "PP00-A 4x240"
+    ],
+    "Gumeni kablovi (H07RN-F)": [
+        "H07RN-F (GG/J) 3x1.5", "H07RN-F 3x2.5", "H07RN-F 5x1.5", 
+        "H07RN-F 5x2.5", "H07RN-F 5x4", "H07RN-F 5x6", "H07RN-F 5x10", "H07RN-F 5x16"
+    ],
+    "Signalni i provodnici": [
+        "LiYCY 2x0.75", "LiYCY 3x0.75", "LiYCY 4x0.75", "LiYCY 5x0.75", 
+        "P/F (H07V-K) 0.75", "P/F 1.5", "P/F 2.5", "P/F 4", "P/F 6", 
+        "P 1.5", "P 2.5", "P 4", "P 6"
+    ],
+    "Specijalni i Telekom": [
+        "SKS 2x16", "SKS 4x16", "UTP Cat5e", "FTP Cat6", "SFTP Cat7", 
+        "Koaksijalni RG6", "Alarmni 4x0.22", "Alarmni 6x0.22", "Solarni 6mm2"
+    ]
+}
         self.kreiraj_bazu()
 
     def kreiraj_bazu(self):
@@ -183,16 +185,27 @@ with st.sidebar:
 
 # GLAVNI EKRAN - UNOS
 with st.expander("📝 UNOS NOVE STAVKE"):
-    with st.form("forma", clear_on_submit=True):
+    with st.form("forma_unos", clear_on_submit=True):
         c1, c2, c3 = st.columns(3)
         dat = c1.text_input("📅 Datum", datetime.now().strftime("%d.%m.%Y"))
         orm = c2.text_input("🏗️ RO").upper()
         krug = c3.text_input("🔌 Krug")
-        tip = st.selectbox("📦 Tip materijala", app.tipovi)
+        
+        # --- NOVI DEO ZA KATEGORIJE ---
+        col_kat, col_tip = st.columns(2)
+        
+        # 1. Korisnik bira grupu
+        izabrana_kat = col_kat.selectbox("📁 Izaberi kategoriju", list(app.kategorije_materijala.keys()))
+        
+        # 2. Na osnovu grupe, nudi se podlista materijala
+        tip = col_tip.selectbox("📦 Tip materijala", app.kategorije_materijala[izabrana_kat])
+        # ------------------------------
+        
         c4, c5, c6 = st.columns([1, 1, 2])
         kol = c4.number_input("Kol", min_value=0.0, step=0.1)
         jed = c5.selectbox("Jed", ["m", "kom"])
         nap = c6.text_input("📝 Napomena")
+        
         if st.form_submit_button("💾 SNIMI"):
             app.sacuvaj_u_bazu((dat, orm, krug, tip, kol, jed, nap))
             st.rerun()
