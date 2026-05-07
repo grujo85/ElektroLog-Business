@@ -130,24 +130,44 @@ with st.sidebar:
         if potvrda: app.obrisi_sve(); st.rerun()
 
 # UNOS
-with st.expander("📝 UNOS NOVE STAVKE"):
-    with st.form("forma", clear_on_submit=True):
-        c1, c2, c3 = st.columns(3)
-        dat = c1.text_input("📅 Datum", datetime.now().strftime("%d.%m.%Y"))
-        orm = c2.text_input("🏗️ RO").upper()
-        krug = c3.text_input("🔌 Krug")
-        
-        kat_col, tip_col = st.columns(2)
-        izab_kat = kat_col.selectbox("📁 Kategorija", list(app.kategorije_materijala.keys()))
-        tip = tip_col.selectbox("📦 Tip materijala", app.kategorije_materijala[izab_kat])
-        
+with st.expander("📝 UNOS NOVE STAVKE", expanded=True):
+    # Prvo biramo kategoriju VAN forme ili koristimo on_change, 
+    # ali najjednostavnije je ovako unutar forme sa specifičnim ključevima:
+    
+    c1, c2, c3 = st.columns(3)
+    dat = c1.text_input("📅 Datum", datetime.now().strftime("%d.%m.%Y"))
+    orm = c2.text_input("🏗️ RO").upper()
+    krug = c3.text_input("🔌 Krug")
+    
+    kat_col, tip_col = st.columns(2)
+    
+    # Dodajemo 'key' da bi Streamlit pamtio izbor
+    izab_kat = kat_col.selectbox(
+        "📁 Kategorija", 
+        options=list(app.kategorije_materijala.keys()),
+        key="kat_selector"
+    )
+    
+    # Lista tipova se sada direktno vezuje za vrednost iz 'kat_selector'
+    tip = tip_col.selectbox(
+        "📦 Tip materijala", 
+        options=app.kategorije_materijala[st.session_state.kat_selector],
+        key="tip_selector"
+    )
+    
+    with st.form("ostatak_forme", clear_on_submit=True):
         c4, c5, c6 = st.columns([1, 1, 2])
         kol = c4.number_input("Kol", min_value=0.0, step=0.1)
         jed = c5.selectbox("Jed", ["m", "kom"])
         nap = c6.text_input("📝 Napomena")
-        if st.form_submit_button("💾 SNIMI"):
-            app.sacuvaj_u_bazu((dat, orm, krug, tip, kol, jed, nap))
-            st.rerun()
+        
+        if st.form_submit_button("💾 SNIMI U BAZU"):
+            if orm and krug:
+                app.sacuvaj_u_bazu((dat, orm, krug, tip, kol, jed, nap))
+                st.success(f"Snimljeno: {tip}")
+                st.rerun()
+            else:
+                st.error("Popuni RO i Krug!")
 
 # PRIKAZ
 with sqlite3.connect(app.db_name) as conn:
