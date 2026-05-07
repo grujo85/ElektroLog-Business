@@ -77,7 +77,7 @@ class ElektroProUltra:
         pdf = PDFSpec()
         pdf.add_page()
         
-        # TABELA 1: SPECIFIKACIJA PO STAVKAMA
+        # --- TABELA 1: SPECIFIKACIJA PO STAVKAMA ---
         pdf.set_fill_color(49, 130, 206) 
         pdf.set_text_color(255)
         pdf.set_font("Arial", "B", 9)
@@ -102,18 +102,20 @@ class ElektroProUltra:
 
         pdf.ln(10)
         
-        # TABELA 2: UKUPAN UTROŠAK MATERIJALA (SUMARNO)
+        # --- TABELA 2: SUMARNI UTROSAK ---
         pdf.set_font("Arial", "B", 11)
+        pdf.set_text_color(49, 130, 206) # Plava boja za naslov sume
         pdf.cell(0, 10, "SUMARNI UTROSAK MATERIJALA:", ln=True)
+        
+        pdf.set_text_color(0)
         pdf.set_font("Arial", "B", 9)
-        pdf.set_fill_color(200, 200, 200)
+        pdf.set_fill_color(235, 235, 235) # Svetlo siva za zaglavlje sume
         pdf.cell(100, 8, "Materijal", border=0, fill=True, align="C")
         pdf.cell(30, 8, "Kolicina", border=0, fill=True, align="C")
         pdf.cell(30, 8, "Jedinica", border=0, fill=True, align="C")
         pdf.ln()
 
         pdf.set_font("Arial", "", 9)
-        # Grupisanje podataka po Tipu i Jedinici
         utrosak = df_clean.groupby(['tip', 'jed'])['kol'].sum().reset_index()
         for _, row in utrosak.iterrows():
             pdf.cell(100, 7, str(row['tip']), border=0, align="C")
@@ -121,9 +123,28 @@ class ElektroProUltra:
             pdf.cell(30, 7, str(row['jed']), border=0, align="C")
             pdf.ln()
 
-        pdf.ln(5)
-        pdf.set_font("Arial", "B", 11)
-        pdf.cell(0, 10, f"UKUPNO KABLOVA: {tm:.2f} m | {int(tk)} kom", ln=True, align="R")
+        # --- UOKVIRENI ZAKLJUČAK (UKUPNO KABLOVA) ---
+        pdf.ln(10)
+        
+        # Podešavanje boja za okvir i unutrašnjost
+        pdf.set_draw_color(49, 130, 206) # Tamno plava linija okvira
+        pdf.set_fill_color(235, 248, 255) # Vrlo svetlo plava pozadina
+        pdf.set_line_width(0.5)
+        
+        # Tekst koji ide unutra
+        txt = f"UKUPNO KABLOVA: {tm:.2f} m | {int(tk)} kom"
+        sirina_boxa = 100
+        x_pozicija = 190 - sirina_boxa # Desno poravnanje
+        
+        # Crtanje pravougaonika i ispis teksta
+        pdf.set_font("Arial", "B", 12)
+        # rect(x, y, w, h, style) -> 'FD' znači Fill and Draw (boja + okvir)
+        pdf.rect(x_pozicija, pdf.get_y(), sirina_boxa, 12, 'FD')
+        
+        # Pomaknemo kursor da ispiše tekst unutar tog pravougaonika
+        pdf.set_x(x_pozicija)
+        pdf.cell(sirina_boxa, 12, txt, border=0, align="C")
+        
         return pdf.output()
 
 # ==============================================================================
