@@ -3,8 +3,7 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 import os
-import base64
-from fpdf import FPDF # Biblioteka za PDF
+from fpdf import FPDF
 
 # ==============================================================================
 # 1. KONFIGURACIJA I STILIZACIJA
@@ -25,12 +24,11 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. KLASA ZA PDF (Podrška za naša slova i logo)
+# 2. KLASA ZA PDF (Centriran tekst sa Napomenom)
 # ==============================================================================
 class PDFSpec(FPDF):
     def header(self):
         if os.path.exists("elmar.webp"):
-            # fpdf2 podržava webp, ali ako pravi problem, koristi png/jpg
             try: self.image("elmar.webp", 10, 8, 33)
             except: pass
         self.set_font("Arial", "B", 15)
@@ -46,7 +44,7 @@ class PDFSpec(FPDF):
         self.cell(0, 10, "ELMAR ELEKTRO-INSTALACIJE | DESIGN VLADE 2026 | INTERNI DOKUMENT", align="C")
 
 # ==============================================================================
-# 3. GLAVNA KLASA
+# 3. GLAVNA KLASA ZA LOGIKU
 # ==============================================================================
 class ElektroProUltra:
     def __init__(self):
@@ -59,7 +57,7 @@ class ElektroProUltra:
             "N2XH-J 3x1.5", "N2XH-J 3x2.5", "N2XH-J 5x1.5", "N2XH-J 5x2.5", "N2XH-J 5x4", "N2XH-J 5x6",
             "PP00 4x16", "PP00 4x25", "PP00 4x35", "PP00 4x50", "PP00 4x70",
             "LiYCY 2x0.75", "UTP Cat5e", "FTP Cat6", "Solarni 6mm2"
-        ] # Skraćeno ovde, u tvom kodu ostavi punu listu
+        ]
         self.kreiraj_bazu()
 
     def kreiraj_bazu(self):
@@ -73,39 +71,51 @@ class ElektroProUltra:
         with sqlite3.connect(self.db_name) as conn:
             conn.execute("INSERT INTO radovi (datum, orman, opis, tip, kol, jed, napomena) VALUES (?,?,?,?,?,?,?)", d)
 
+    def azuriraj_bazu(self, df_izmenjen):
+        with sqlite3.connect(self.db_name) as conn:
+            df_izmenjen.to_sql("radovi", conn, if_exists="replace", index=False)
+
     def obrisi_stavku(self, id_reda):
         with sqlite3.connect(self.db_name) as conn:
             conn.execute("DELETE FROM radovi WHERE id=?", (id_reda,))
-
-    def azuriraj_bazu(self, df_izmenjen):
-        # Ova funkcija prepisuje celu tabelu sa novim izmenama iz Streamlita
-        with sqlite3.connect(self.db_name) as conn:
-            df_izmenjen.to_sql("radovi", conn, if_exists="replace", index=False)
 
     def generisi_pdf(self, df, tm, tk):
         pdf = PDFSpec()
         pdf.add_page()
         
-        # Tabela zaglavlje
-        pdf.set_fill_color(49, 130, 206) # Plava
+        # Plavo zaglavlje
+        pdf.set_fill_color(49, 130, 206) 
         pdf.set_text_color(255)
-        pdf.set_font("Arial", "B", 10)
+        pdf.set_font("Arial", "B", 9)
         
-        cols = [("Datum", 25), ("RO", 20), ("Krug", 30), ("Tip materijala", 60), ("Kol", 20), ("Jed", 10)]
+        # Širine kolona (ukupno 190mm)
+        cols = [
+            ("Datum", 22), ("RO", 18), ("Krug", 15), 
+            ("Tip materijala", 60), ("Kol", 15), ("Jed", 10), ("Napomena", 50)
+        ]
+        
         for col_name, width in cols:
             pdf.cell(width, 10, col_name, border=1, align="C", fill=True)
         pdf.ln()
 
-        # Podaci
+        # Podaci - Centrirani
         pdf.set_text_color(0)
-        pdf.set_font("Arial", "", 9)
-        for _, r in df.iterrows():
-            pdf.cell(25, 8, str(r['datum']), border=1)
-            pdf.cell(20, 8, str(r['orman']), border=1)
-            pdf.cell(30, 8, str(r['opis']), border=1)
-            pdf.cell(60, 8, str(r['tip']), border=1)
-            pdf.cell(20, 8, str(r['kol']), border=1, align="C")
+        pdf.set_font("Arial", "", 8)
+        
+        # Filtriranje praznih redova iz editora
+        df_clean = df.dropna(subset=['datum', 'orman', 'tip'])
+
+        for _, r in df_clean.iterrows():
+            pdf.cell(22, 8, str(r['datum']), border=1, align="C")
+            pdf.cell(18, 8, str(r['orman']), border=1, align="C")
+            pdf.cell(15, 8, str(r['opis']), border=1, align="C")
+            pdf.cell(60, 8, str(r['tip']), border=1, align="C")
+            pdf.cell(15, 8, str(r['kol']), border=1, align="C")
             pdf.cell(10, 8, str(r['jed']), border=1, align="C")
+            
+            # Napomena centrirana (prazno ako je None)
+            nap = str(r['napomena']) if r['napomena'] and str(r['napomena']) != 'None' else ""
+            pdf.cell(50, 8, nap, border=1, align="C")
             pdf.ln()
 
         pdf.ln(5)
@@ -119,30 +129,17 @@ class ElektroProUltra:
 # ==============================================================================
 app = ElektroProUltra()
 
-# --- SIDEBAR (Backup & Restore) ---
+# SIDEBAR
 with st.sidebar:
     st.header("⚙️ SISTEM")
-    
-    # BACKUP
-    with open(app.db_name, "rb") as f:
-        st.download_button("📥 BACKUP BAZE (.db)", f, file_name=f"backup_{datetime.now().strftime('%Y%m%d')}.db")
-    
-    st.divider()
-    
-    # RESTORE
-    st.subheader("📤 RESTORE (Vrati bazu)")
-    uploaded_file = st.file_uploader("Odaberi backup fajl", type="db")
-    if uploaded_file is not None:
-        if st.button("⚠️ POTVRDI RESTORE"):
-            with open(app.db_name, "wb") as f:
-                f.write(uploaded_file.getbuffer())
-            st.success("Baza uspešno zamenjena!")
-            st.rerun()
+    if os.path.exists(app.db_name):
+        with open(app.db_name, "rb") as f:
+            st.download_button("📥 BACKUP BAZE (.db)", f, file_name=f"backup_{datetime.now().strftime('%Y%m%d')}.db")
 
-# --- GLAVNI EKRAN ---
+# UNOS NOVE STAVKE
 with st.expander("📝 UNOS NOVE STAVKE", expanded=False):
     with st.form("forma_unos", clear_on_submit=True):
-        c1, c2, c3 = st.columns([1, 1, 1])
+        c1, c2, c3 = st.columns(3)
         dat = c1.text_input("📅 Datum", datetime.now().strftime("%d.%m.%Y"))
         orm = c2.text_input("🏗️ Orman (RO)").upper()
         krug = c3.text_input("🔌 Strujni krug")
@@ -156,7 +153,7 @@ with st.expander("📝 UNOS NOVE STAVKE", expanded=False):
                 app.sacuvaj_u_bazu((dat, orm, krug, tip, kol, jed, nap))
                 st.rerun()
 
-# --- RAD SA PODACIMA ---
+# RAD SA PODACIMA
 with sqlite3.connect(app.db_name) as conn:
     df_prikaz = pd.read_sql_query("SELECT * FROM radovi ORDER BY id DESC", conn)
 
@@ -172,13 +169,12 @@ if not df_prikaz.empty:
     col_m.metric("UKUPNO METARA", f"{suma_m:.2f} m")
     col_k.metric("UKUPNO KOMADA", f"{int(suma_k)} kom")
 
-    st.markdown("### ✏️ Izmena podataka (Klikni na polje da promeniš)")
-    # ST.DATA_EDITOR - Ovo omogućava editovanje kolona
+    st.markdown("### ✏️ Izmena podataka")
     edited_df = st.data_editor(
         df_prikaz, 
         use_container_width=True, 
         hide_index=True,
-        num_rows="dynamic" # Dozvoljava brisanje redova (selektuj red i pritisni Del)
+        num_rows="dynamic"
     )
 
     if st.button("✅ SAČUVAJ SVE IZMENE U TABELI"):
@@ -186,13 +182,12 @@ if not df_prikaz.empty:
         st.success("Baza je ažurirana!")
         st.rerun()
 
-    # Akcije ispod
     st.divider()
     c_pdf, c_del = st.columns([1, 1])
     
     with c_pdf:
+        # Rešen IndentationError i dodat PDF download
         pdf_output = app.generisi_pdf(edited_df, suma_m, suma_k)
-        # DODAJ OVU LINIJU DA PRETVORIŠ U BAJTOVE:
         pdf_bytes = bytes(pdf_output) 
         st.download_button("📄 PREUZMI PDF IZVEŠTAJ", pdf_bytes, "izvestaj.pdf", "application/pdf")
         
