@@ -191,10 +191,10 @@ if not df_prikaz.empty:
     c_pdf, c_del = st.columns([1, 1])
     
     with c_pdf:
-    pdf_output = app.generisi_pdf(edited_df, suma_m, suma_k)
-    # DODAJ OVU LINIJU DA PRETVORIŠ U BAJTOVE:
-    pdf_bytes = bytes(pdf_output) 
-    st.download_button("📄 PREUZMI PDF IZVEŠTAJ", pdf_bytes, "izvestaj.pdf", "application/pdf")
+        pdf_output = app.generisi_pdf(edited_df, suma_m, suma_k)
+        # DODAJ OVU LINIJU DA PRETVORIŠ U BAJTOVE:
+        pdf_bytes = bytes(pdf_output) 
+        st.download_button("📄 PREUZMI PDF IZVEŠTAJ", pdf_bytes, "izvestaj.pdf", "application/pdf")
         
     with c_del:
         if st.button("🗑️ OBRIŠI POSLEDNJI UNOS"):
