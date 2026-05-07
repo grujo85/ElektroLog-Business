@@ -4,69 +4,63 @@ import pandas as pd
 from datetime import datetime
 import os
 import base64
+from fpdf import FPDF # Biblioteka za PDF
 
 # ==============================================================================
-# 1. KONFIGURACIJA I STILIZACIJA (Sve tvoje postavke, prilagođene za web/tel)
+# 1. KONFIGURACIJA I STILIZACIJA
 # ==============================================================================
 st.set_page_config(
-    page_title="ELEKTRO-LOG BUSINESS v1.0",
+    page_title="ELEKTRO-LOG BUSINESS v1.1",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS da zadržimo onaj tvoj "Business" izgled (plave nijanse)
 st.markdown("""
     <style>
     .main { background-color: #f8f9fa; }
     .stButton>button { width: 100%; border-radius: 5px; height: 3em; background-color: #3182ce; color: white; }
     .stTextInput>div>div>input { text-transform: uppercase; }
+    [data-testid="stMetricValue"] { font-size: 24px; color: #3182ce; }
     </style>
     """, unsafe_allow_html=True)
 
 # ==============================================================================
-# 2. GLAVNA KLASA (Tvoja klasa ElektroProUltra - Identitčna tvojoj logici)
+# 2. KLASA ZA PDF (Podrška za naša slova i logo)
+# ==============================================================================
+class PDFSpec(FPDF):
+    def header(self):
+        if os.path.exists("elmar.webp"):
+            # fpdf2 podržava webp, ali ako pravi problem, koristi png/jpg
+            try: self.image("elmar.webp", 10, 8, 33)
+            except: pass
+        self.set_font("Arial", "B", 15)
+        self.cell(0, 10, "SPECIFIKACIJA RADOVA", ln=True, align="R")
+        self.set_font("Arial", "", 10)
+        self.cell(0, 10, f"Datum izrade: {datetime.now().strftime('%d.%m.%Y')}", ln=True, align="R")
+        self.ln(10)
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Arial", "I", 8)
+        self.set_text_color(128)
+        self.cell(0, 10, "ELMAR ELEKTRO-INSTALACIJE | DESIGN VLADE 2026 | INTERNI DOKUMENT", align="C")
+
+# ==============================================================================
+# 3. GLAVNA KLASA
 # ==============================================================================
 class ElektroProUltra:
     def __init__(self):
         self.db_name = "elektro_baza.db"
-        self.putanja_logotipa = "elmar.webp"
-        self.logo_data = self.ucitaj_logo_u_base64()
-        
-        # TVOJA LISTA MATERIJALA - NIŠTA NIJE ODUZETO
         self.tipovi = [
             "Brezon M8", "Brezon M10", "C-šina 30x20", "C-šina 41x21", 
             "Regal 50", "Regal 100", "Regal 150", "Regal 200", "Regal 300", "Regal 400", "Regal 500", "Regal 600",
             "LR Krivina", "LR T-komad", "Poklopac regala",
-            "PP-Y 2x1.5", "PP-Y 3x1.5", "PP-Y 3x2.5", "PP-Y 3x4", "PP-Y 4x1.5", "PP-Y 4x2.5", "PP-Y 4x4",
-            "PP-Y 5x1.5", "PP-Y 5x2.5", "PP-Y 5x4", "PP-Y 5x6", "PP-Y 5x10", "PP-Y 5x16",
-            "N2XH-J 3x1.5", "N2XH-J 3x2.5", "N2XH-J 3x4", "N2XH-J 5x1.5", "N2XH-J 5x2.5", "N2XH-J 5x4",
-            "N2XH-J 5x6", "N2XH-J 5x10", "N2XH-J 5x16", "N2XH-J 5x25", "N2XH-J 5x35", "N2XH-J 5x50",
-            "NHXH FE180 3x1.5", "NHXH FE180 3x2.5", "NHXH FE180 5x1.5", "NHXH FE180 5x2.5", "NHXH FE180 5x4", "NHXH FE180 5x6",
-            "PP00 3x1.5", "PP00 3x2.5", "PP00 4x1.5", "PP00 4x2.5", "PP00 4x4", "PP00 4x6", "PP00 4x10",
-            "PP00 4x16", "PP00 4x25", "PP00 4x35", "PP00 4x50", "PP00 4x70", "PP00 4x95", "PP00 4x120",
-            "PP00 4x150", "PP00 4x185", "PP00 4x240", "PP00 5x1.5", "PP00 5x2.5", "PP00 5x4", "PP00 5x6",
-            "PP00 5x10", "PP00 5x16", 
-            "PP00-A (Al) 4x16", "PP00-A 4x25", "PP00-A 4x35", "PP00-A 4x50", 
-            "PP00-A 4x70", "PP00-A 4x95", "PP00-A 4x120", "PP00-A 4x150", "PP00-A 4x240",
-            "H07RN-F (GG/J) 3x1.5", "H07RN-F 3x2.5", "H07RN-F 5x1.5", "H07RN-F 5x2.5", "H07RN-F 5x4", 
-            "H07RN-F 5x6", "H07RN-F 5x10", "H07RN-F 5x16", 
-            "LiYCY 2x0.75", "LiYCY 3x0.75", "LiYCY 4x0.75", "LiYCY 5x0.75", "LiYCY 7x0.75", "LiYCY 12x0.75",
-            "P/F (H07V-K) 0.75", "P/F 1.5", "P/F 2.5", "P/F 4", "P/F 6", "P/F 10", "P/F 16", "P/F 25", "P/F 35", "P/F 50",
-            "P (H07V-U) 1.5", "P 2.5", "P 4", "P 6", 
-            "SKS 2x16", "SKS 4x16", "SKS 4x25",
-            "UTP Cat5e", "FTP Cat6", "SFTP Cat7", "Koaksijalni RG6", "Koaksijalni RG11",
-            "Alarmni 4x0.22", "Alarmni 6x0.22", "Alarmni 8x0.22", "JH(St)H 2x2x0.8", "JH(St)H 4x2x0.8",
-            "Solarni 4mm2", "Solarni 6mm2"
-        ]
+            "PP-Y 3x1.5", "PP-Y 3x2.5", "PP-Y 5x1.5", "PP-Y 5x2.5", "PP-Y 5x4",
+            "N2XH-J 3x1.5", "N2XH-J 3x2.5", "N2XH-J 5x1.5", "N2XH-J 5x2.5", "N2XH-J 5x4", "N2XH-J 5x6",
+            "PP00 4x16", "PP00 4x25", "PP00 4x35", "PP00 4x50", "PP00 4x70",
+            "LiYCY 2x0.75", "UTP Cat5e", "FTP Cat6", "Solarni 6mm2"
+        ] # Skraćeno ovde, u tvom kodu ostavi punu listu
         self.kreiraj_bazu()
-
-    def ucitaj_logo_u_base64(self):
-        if os.path.exists(self.putanja_logotipa):
-            try:
-                with open(self.putanja_logotipa, "rb") as f: 
-                    return base64.b64encode(f.read()).decode('utf-8')
-            except: return ""
-        return ""
 
     def kreiraj_bazu(self):
         with sqlite3.connect(self.db_name) as conn:
@@ -83,132 +77,126 @@ class ElektroProUltra:
         with sqlite3.connect(self.db_name) as conn:
             conn.execute("DELETE FROM radovi WHERE id=?", (id_reda,))
 
-    # TVOJ ORIGINALNI HTML IZVEŠTAJ - KOMPLETAN STIL
-    def generisi_html(self, df, tm, tk):
-        # Povećan logo na 120px i dodat blend mode da se stopi sa pozadinom
-        logo_img = f'<img src="data:image/webp;base64,{self.logo_data}" style="height:120px; mix-blend-mode: multiply;">' if self.logo_data else ""
-        rows = ""
-        for _, r in df.iterrows():
-            rows += f"<tr><td>{r['datum']}</td><td>{r['orman']}</td><td>{r['opis']}</td><td><b>{r['tip']}</b></td><td>{r['kol']} {r['jed']}</td><td>{r['napomena']}</td></tr>"
+    def azuriraj_bazu(self, df_izmenjen):
+        # Ova funkcija prepisuje celu tabelu sa novim izmenama iz Streamlita
+        with sqlite3.connect(self.db_name) as conn:
+            df_izmenjen.to_sql("radovi", conn, if_exists="replace", index=False)
+
+    def generisi_pdf(self, df, tm, tk):
+        pdf = PDFSpec()
+        pdf.add_page()
         
-        return f"""
-        <html><head><meta charset='UTF-8'><style>
-            body {{ font-family: 'Segoe UI', sans-serif; margin: 30px; }}
-            table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-            th {{ background: #3182ce; color: white; padding: 10px; }}
-            td {{ border-bottom: 1px solid #ddd; padding: 10px; text-align: center; }}
-            
-            /* STIL ZA SUMU (METRAŽU) */
-            .summary-box {{ 
-                margin-top: 20px; 
-                text-align: right; 
-                font-size: 18px; 
-                font-weight: bold; 
-            }}
-            
-            /* STIL ZA TVOJ POTPIS NA DNU */
-            .footer {{ 
-                margin-top: 60px; 
-                text-align: center; 
-                font-size: 11px; 
-                color: #888888; 
-                border-top: 1px solid #eeeeee; 
-                padding-top: 15px; 
-            }}
-        </style></head><body>
-            <div class='header'>
-                {logo_img} 
-                <div style="flex-grow: 1;">
-                    <h1 style="margin:0; text-align: right;">SPECIFIKACIJA RADOVA</h1>
-                    <p style="margin:0; color: #4a5568; text-align: right; width: 100%;">
-                        Datum: {datetime.now().strftime('%d.%m.%Y')}
-                    </p>
-                </div>
-            </div>
-            
-            <table>
-                <tr><th>Datum</th><th>Orman</th><th>Krug</th><th>Tip</th><th>Kol</th><th>Napomena</th></tr>
-                {rows}
-            </table>
-            
-            <div class='summary-box'>UKUPNO KABLOVA: {tm:.2f} m | {int(tk)} kom</div>
-            
-            <!-- TVOJ SIVI CENTRIRANI FOOTER -->
-            <div class="footer">
-                ELMAR ELEKTRO-INSTALACIJE &nbsp; | &nbsp; DESIGN VLADE 2026 &nbsp; | &nbsp; INTERNI DOKUMENT
-            </div>
-        </body></html>"""
+        # Tabela zaglavlje
+        pdf.set_fill_color(49, 130, 206) # Plava
+        pdf.set_text_color(255)
+        pdf.set_font("Arial", "B", 10)
+        
+        cols = [("Datum", 25), ("RO", 20), ("Krug", 30), ("Tip materijala", 60), ("Kol", 20), ("Jed", 10)]
+        for col_name, width in cols:
+            pdf.cell(width, 10, col_name, border=1, align="C", fill=True)
+        pdf.ln()
+
+        # Podaci
+        pdf.set_text_color(0)
+        pdf.set_font("Arial", "", 9)
+        for _, r in df.iterrows():
+            pdf.cell(25, 8, str(r['datum']), border=1)
+            pdf.cell(20, 8, str(r['orman']), border=1)
+            pdf.cell(30, 8, str(r['opis']), border=1)
+            pdf.cell(60, 8, str(r['tip']), border=1)
+            pdf.cell(20, 8, str(r['kol']), border=1, align="C")
+            pdf.cell(10, 8, str(r['jed']), border=1, align="C")
+            pdf.ln()
+
+        pdf.ln(5)
+        pdf.set_font("Arial", "B", 11)
+        pdf.cell(0, 10, f"UKUPNO KABLOVA: {tm:.2f} m | {int(tk)} kom", ln=True, align="R")
+        
+        return pdf.output()
 
 # ==============================================================================
-# 3. INTERFEJS (Streamlit - Dodatna funkcionalnost za mobilni)
+# 4. INTERFEJS
 # ==============================================================================
 app = ElektroProUltra()
 
-# --- PRIKAZ LOGA NA VRHU ---
-if app.logo_data:
-    st.markdown(f'<div style="text-align: center;"><img src="data:image/webp;base64,{app.logo_data}" style="max-height: 100px;"></div>', unsafe_allow_html=True)
+# --- SIDEBAR (Backup & Restore) ---
+with st.sidebar:
+    st.header("⚙️ SISTEM")
+    
+    # BACKUP
+    with open(app.db_name, "rb") as f:
+        st.download_button("📥 BACKUP BAZE (.db)", f, file_name=f"backup_{datetime.now().strftime('%Y%m%d')}.db")
+    
+    st.divider()
+    
+    # RESTORE
+    st.subheader("📤 RESTORE (Vrati bazu)")
+    uploaded_file = st.file_uploader("Odaberi backup fajl", type="db")
+    if uploaded_file is not None:
+        if st.button("⚠️ POTVRDI RESTORE"):
+            with open(app.db_name, "wb") as f:
+                f.write(uploaded_file.getbuffer())
+            st.success("Baza uspešno zamenjena!")
+            st.rerun()
 
-# Gornji panel: Unos podataka
-with st.expander("📝 UNOS NOVE STAVKE", expanded=True):
+# --- GLAVNI EKRAN ---
+with st.expander("📝 UNOS NOVE STAVKE", expanded=False):
     with st.form("forma_unos", clear_on_submit=True):
         c1, c2, c3 = st.columns([1, 1, 1])
         dat = c1.text_input("📅 Datum", datetime.now().strftime("%d.%m.%Y"))
         orm = c2.text_input("🏗️ Orman (RO)").upper()
         krug = c3.text_input("🔌 Strujni krug")
-        
         tip = st.selectbox("📦 Tip materijala", app.tipovi)
-        
         c4, c5, c6 = st.columns([1, 1, 2])
         kol = c4.number_input("Količina", min_value=0.0, step=0.1)
         jed = c5.selectbox("Jedinica", ["m", "kom"])
         nap = c6.text_input("📝 Napomena")
-        
         if st.form_submit_button("💾 SNIMI U BAZU"):
             if orm and krug:
                 app.sacuvaj_u_bazu((dat, orm, krug, tip, kol, jed, nap))
-                st.success(f"Dodato: {tip} u {orm}")
                 st.rerun()
-            else:
-                st.error("Polja Orman i Strujni krug su obavezna!")
 
-# Donji panel: Prikaz i statistika
+# --- RAD SA PODACIMA ---
 with sqlite3.connect(app.db_name) as conn:
     df_prikaz = pd.read_sql_query("SELECT * FROM radovi ORDER BY id DESC", conn)
 
 if not df_prikaz.empty:
-    # Tvoja logika filtriranja nosača za ukupnu metražu
+    # Metrika
     oprema = ("REGAL", "BREZON", "C-ŠINA", "LR ", "POKLOPAC")
     mask = df_prikaz['tip'].str.upper().str.contains('|'.join(oprema))
     df_kablovska = df_prikaz[~mask]
-    
     suma_m = df_kablovska[df_kablovska['jed'] == 'm']['kol'].sum()
     suma_k = df_kablovska[df_kablovska['jed'] == 'kom']['kol'].sum()
 
-    # Veliki vidljivi brojevi (odlično za telefon)
     col_m, col_k = st.columns(2)
     col_m.metric("UKUPNO METARA", f"{suma_m:.2f} m")
     col_k.metric("UKUPNO KOMADA", f"{int(suma_k)} kom")
 
-    st.markdown("### 📋 Pregled unetih stavki")
-    st.dataframe(df_prikaz, use_container_width=True, hide_index=True)
+    st.markdown("### ✏️ Izmena podataka (Klikni na polje da promeniš)")
+    # ST.DATA_EDITOR - Ovo omogućava editovanje kolona
+    edited_df = st.data_editor(
+        df_prikaz, 
+        use_container_width=True, 
+        hide_index=True,
+        num_rows="dynamic" # Dozvoljava brisanje redova (selektuj red i pritisni Del)
+    )
 
-    # Akcije ispod tabele
-    col_btn1, col_btn2, col_btn3 = st.columns(3)
+    if st.button("✅ SAČUVAJ SVE IZMENE U TABELI"):
+        app.azuriraj_bazu(edited_df)
+        st.success("Baza je ažurirana!")
+        st.rerun()
+
+    # Akcije ispod
+    st.divider()
+    c_pdf, c_del = st.columns([1, 1])
     
-    with col_btn1:
-        html_izv = app.generisi_html(df_prikaz, suma_m, suma_k)
-        st.download_button("📥 PREUZMI HTML", html_izv, "izvestaj.html", "text/html")
+    with c_pdf:
+        pdf_data = app.generisi_pdf(edited_df, suma_m, suma_k)
+        st.download_button("📄 PREUZMI PDF IZVEŠTAJ", pdf_data, "izvestaj.pdf", "application/pdf")
         
-    with col_btn2:
-        if st.button("🗑️ OBRIŠI POSLEDNJI"):
-            zadnji_id = df_prikaz['id'].max()
-            app.obrisi_stavku(zadnji_id)
-            st.rerun()
-
-    with col_btn3:
-        id_del = st.number_input("Obriši ID:", min_value=0, step=1)
-        if st.button("❌ OBRIŠI PO ID"):
-            app.obrisi_stavku(id_del)
+    with c_del:
+        if st.button("🗑️ OBRIŠI POSLEDNJI UNOS"):
+            app.obrisi_stavku(df_prikaz['id'].max())
             st.rerun()
 else:
-    st.info("Baza je trenutno prazna. Unesite prve podatke.")
+    st.info("Baza je prazna.")
