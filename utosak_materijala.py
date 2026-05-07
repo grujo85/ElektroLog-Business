@@ -24,6 +24,7 @@ class PDFSpec(FPDF):
             except: pass
         self.set_font("Arial", "B", 15)
         self.cell(0, 10, "SPECIFIKACIJA RADOVA", ln=True, align="R")
+        self.cell(0, 10, "UTROŠAK MATERIJALA", ln=True, align="R")
         self.set_font("Arial", "", 10)
         self.cell(0, 10, f"Datum izrade: {datetime.now().strftime('%d.%m.%Y')}", ln=True, align="R")
         self.ln(10)
@@ -81,7 +82,7 @@ class ElektroProUltra:
         pdf.set_fill_color(49, 130, 206) 
         pdf.set_text_color(255)
         pdf.set_font("Arial", "B", 9)
-        cols = [("Datum", 22), ("RO", 18), ("Krug", 15), ("Tip materijala", 60), ("Kol", 15), ("Jed", 10), ("Napomena", 50)]
+        cols = [("Datum", 22), ("RO", 28), ("Krug", 15), ("Tip materijala", 40), ("Kol", 15), ("Jed", 10), ("Napomena", 50)]
         for col_name, width in cols:
             pdf.cell(width, 10, col_name, border=0, align="C", fill=True)
         pdf.ln()
